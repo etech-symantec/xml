@@ -2,196 +2,303 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>VPM Policy Editor</title>
+    <title>VPM Policy Editor - Rule Search</title>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; margin: 20px; font-size: 14px; }
-        .tab-container { margin-bottom: 20px; }
-        .tab-button { padding: 10px 20px; cursor: pointer; border: 1px solid #ccc; background: #f9f9f9; }
-        .tab-button.active { background: #007bff; color: white; font-weight: bold; }
-        .content-section { display: none; border: 1px solid #ccc; padding: 15px; }
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; font-size: 13px; background: #f0f2f5; color: #333; }
+        
+        /* 상단 고정 헤더 */
+        .header-container {
+            position: sticky; top: 0; background: white; z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px 20px;
+        }
+
+        .controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .search-area { background: #e9ecef; padding: 12px; border-radius: 6px; display: flex; align-items: center; gap: 10px; }
+
+        /* 테이블 및 레이아웃 */
+        .content-area { padding: 20px; }
+        .tab-container { display: flex; gap: 5px; margin-bottom: -1px; }
+        .tab-button { 
+            padding: 10px 25px; cursor: pointer; border: 1px solid #ccc; background: #eee; 
+            border-radius: 6px 6px 0 0; transition: 0.2s; 
+        }
+        .tab-button.active { background: #007bff; color: white; border-color: #007bff; font-weight: bold; }
+        
+        .content-section { display: none; background: #fff; border: 1px solid #ccc; padding: 20px; border-radius: 0 0 6px 6px; }
         .content-section.active { display: block; }
-        
-        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f4f4f4; position: sticky; top: 0; }
+
+        table { border-collapse: collapse; width: 100%; table-layout: fixed; margin-bottom: 30px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; overflow-wrap: break-word; }
+        th { background-color: #f8f9fa; position: sticky; top: 145px; z-index: 10; }
         .edit-cell { background-color: #fffde7; outline: none; }
-        .edit-cell:focus { background-color: #fff9c4; border: 2px solid #ffeb3b; }
         
-        .controls { background: #f1f1f1; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-        button { padding: 8px 12px; cursor: pointer; border-radius: 4px; border: 1px solid #999; }
-        .btn-add { background-color: #28a745; color: white; }
-        .btn-del { background-color: #dc3545; color: white; }
-        .btn-save { background-color: #007bff; color: white; float: right; }
-        
-        .layer-title { background: #e9ecef; font-weight: bold; padding: 5px; margin-top: 20px; border-left: 5px solid #007bff; }
+        /* 검색 및 버튼 스타일 */
+        .search-box { padding: 8px; width: 300px; border: 1px solid #999; border-radius: 4px; font-size: 14px; }
+        .btn-search { background: #007bff; color: white; border: none; padding: 8px 18px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .nav-btn { padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .match-count { font-weight: bold; color: #007bff; min-width: 80px; text-align: center; font-size: 14px; }
+
+        .highlight { background-color: #ffeb3b; color: #000; font-weight: bold; padding: 1px 2px; }
+        .highlight.active { background-color: #ff9800; color: #fff; outline: 3px solid #e65100; box-shadow: 0 0 5px rgba(0,0,0,0.3); }
+        .layer-header { background: #444; color: white; padding: 10px; margin-top: 20px; font-weight: bold; border-radius: 4px 4px 0 0; }
+        .btn-save { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<h2>VPM XML 정책 관리 도구</h2>
+<div class="header-container">
+    <div class="controls-row">
+        <div>
+            <input type="file" id="xmlInput" accept=".txt,.xml">
+            <button onclick="processFile()">파일 불러오기</button>
+        </div>
+        <button class="btn-save" onclick="exportXML()">수정본 XML 다운로드</button>
+    </div>
 
-<div class="controls">
-    <input type="file" id="xmlInput" accept=".txt,.xml">
-    <button onclick="processFile()">파일 불러오기</button>
-    <button class="btn-save" onclick="exportXML()">수정본 XML 다운로드</button>
-</div>
+    <div class="tab-container">
+        <button class="tab-button active" onclick="handleTabSwitch('objects')">객체 관리 (Condition Objects)</button>
+        <button class="tab-button" onclick="handleTabSwitch('rules')">룰 관리 (Layers)</button>
+    </div>
 
-<div class="tab-container">
-    <button class="tab-button active" onclick="showTab('objects')">객체 관리 (Condition Objects)</button>
-    <button class="tab-button" onclick="showTab('rules')">룰 관리 (Layers)</button>
-</div>
-
-<div id="objects" class="content-section active">
-    <h3>객체 리스트 (Node, IP, URL 등)</h3>
-    <div style="margin-bottom:10px;">
-        <select id="objType">
-            <option value="node">node (카테고리/URL)</option>
+    <div class="search-area">
+        <span id="searchLabel" style="font-weight:bold; margin-right:5px;">객체 검색:</span>
+        <select id="objType" onchange="renderObjects()" style="padding:7px; display:inline-block;">
+            <option value="node">node (URL/Category)</option>
             <option value="ipobject">ipobject (IP)</option>
         </select>
-        <button class="btn-add" onclick="addObjectRow()">객체 추가</button>
+        <input type="text" id="commonFilter" class="search-box" placeholder="키워드 입력 후 엔터..." onkeydown="if(event.key==='Enter') executeSearch()">
+        <button class="btn-search" onclick="executeSearch()">검색 & 필터</button>
+        <button class="nav-btn" onclick="moveMatch(-1)">▲</button>
+        <button class="nav-btn" onclick="moveMatch(1)">▼</button>
+        <span id="matchDisplay" class="match-count">0 / 0</span>
+        <button onclick="resetSearch()" style="margin-left:5px;">전체보기</button>
     </div>
-    <table id="objTable">
-        <thead><tr id="objHeader"></tr></thead>
-        <tbody id="objBody"></tbody>
-    </table>
 </div>
 
-<div id="rules" class="content-section">
-    <h3>레이어 및 룰 설정</h3>
-    <div id="layerContainer">
-        </div>
+<div class="content-area">
+    <div id="objects" class="content-section active">
+        <table id="objTable">
+            <thead><tr id="objHeader"></tr></thead>
+            <tbody id="objBody"></tbody>
+        </table>
+    </div>
+    <div id="rules" class="content-section">
+        <div id="layerContainer"></div>
+    </div>
 </div>
 
 <script>
 let xmlDoc = null;
+let matches = [];
+let currentMatchIdx = -1;
+let activeTab = 'objects';
 
-function showTab(tabId) {
+function handleTabSwitch(tabId) {
+    activeTab = tabId;
     document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-    event.target.classList.add('active');
+    event.currentTarget.classList.add('active');
     document.getElementById(tabId).classList.add('active');
+    
+    // 탭 이동 시 UI 및 검색 상태 초기화
+    document.getElementById('searchLabel').innerText = tabId === 'objects' ? "객체 검색:" : "룰 검색:";
+    document.getElementById('objType').style.display = tabId === 'objects' ? "inline-block" : "none";
+    resetSearch();
 }
 
 function processFile() {
     const file = document.getElementById('xmlInput').files[0];
-    if (!file) return alert("파일을 선택하세요.");
-
+    if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(e) {
-        const parser = new DOMParser();
-        xmlDoc = parser.parseFromString(e.target.result, "text/xml");
+    reader.onload = (e) => {
+        xmlDoc = new DOMParser().parseFromString(e.target.result, "text/xml");
         renderObjects();
         renderRules();
     };
     reader.readAsText(file);
 }
 
-// 1. 객체 관리 렌더링 (conditionObjects)
+// 공통 검색 실행 함수 (객체 탭 / 룰 탭 구분)
+function executeSearch() {
+    const term = document.getElementById('commonFilter').value.trim().toLowerCase();
+    const containerId = activeTab === 'objects' ? '#objBody' : '#layerContainer';
+    const rows = document.querySelectorAll(`${containerId} tr`);
+    
+    matches = [];
+    currentMatchIdx = -1;
+
+    if (!term) { resetSearch(); return; }
+
+    rows.forEach(row => {
+        let isRowVisible = false;
+        // 룰 관리에서는 모든 셀(td)을 대상으로 검색
+        const cells = row.querySelectorAll('td');
+
+        cells.forEach(cell => {
+            const originalText = cell.getAttribute('data-original') || cell.innerText;
+            if (!cell.hasAttribute('data-original')) cell.setAttribute('data-original', originalText);
+
+            if (originalText.toLowerCase().includes(term)) {
+                isRowVisible = true;
+                const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "gi");
+                cell.innerHTML = originalText.replace(regex, `<span class="highlight">$1</span>`);
+                cell.querySelectorAll('.highlight').forEach(h => matches.push(h));
+            } else {
+                cell.innerHTML = originalText;
+            }
+        });
+
+        row.style.display = isRowVisible ? "" : "none";
+    });
+
+    updateMatchDisplay();
+    if (matches.length > 0) moveMatch(1);
+    else alert("일치하는 결과가 없습니다.");
+}
+
+function resetSearch() {
+    document.getElementById('commonFilter').value = "";
+    const containerId = activeTab === 'objects' ? '#objBody' : '#layerContainer';
+    const rows = document.querySelectorAll(`${containerId} tr`);
+    
+    rows.forEach(row => {
+        row.style.display = "";
+        row.querySelectorAll('td').forEach(cell => {
+            const original = cell.getAttribute('data-original');
+            if (original !== null) cell.innerHTML = original;
+        });
+    });
+    matches = [];
+    currentMatchIdx = -1;
+    updateMatchDisplay();
+}
+
+function moveMatch(direction) {
+    if (matches.length === 0) return;
+    if (currentMatchIdx >= 0 && matches[currentMatchIdx]) matches[currentMatchIdx].classList.remove('active');
+
+    currentMatchIdx += direction;
+    if (currentMatchIdx >= matches.length) currentMatchIdx = 0;
+    if (currentMatchIdx < 0) currentMatchIdx = matches.length - 1;
+
+    const target = matches[currentMatchIdx];
+    target.classList.add('active');
+    
+    const offset = 220; 
+    const elementPosition = target.getBoundingClientRect().top + window.pageYOffset;
+    window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
+    
+    updateMatchDisplay();
+}
+
+function updateMatchDisplay() {
+    document.getElementById('matchDisplay').innerText = matches.length > 0 ? `${currentMatchIdx + 1} / ${matches.length}` : "0 / 0";
+}
+
+// 객체 리스트 렌더링
 function renderObjects() {
+    if(!xmlDoc) return;
     const type = document.getElementById('objType').value;
     const items = xmlDoc.getElementsByTagName(type);
     const body = document.getElementById('objBody');
     const header = document.getElementById('objHeader');
-    body.innerHTML = "";
-    header.innerHTML = "";
-
+    body.innerHTML = ""; header.innerHTML = "";
     if (items.length === 0) return;
 
     const attrs = items[0].attributes;
-    for (let i = 0; i < attrs.length; i++) {
-        header.innerHTML += `<th>${attrs[i].name}</th>`;
-    }
-    header.innerHTML += `<th>관리</th>`;
+    for (let i = 0; i < attrs.length; i++) header.innerHTML += `<th>${attrs[i].name}</th>`;
+    header.innerHTML += `<th style="width:60px;">삭제</th>`;
 
     for (let i = 0; i < items.length; i++) {
         const tr = document.createElement('tr');
         for (let j = 0; j < attrs.length; j++) {
             const attrName = attrs[j].name;
             const td = document.createElement('td');
-            td.innerText = items[i].getAttribute(attrName) || "";
+            const val = items[i].getAttribute(attrName) || "";
+            td.innerText = val;
             td.contentEditable = true;
             td.className = "edit-cell";
-            td.oninput = () => items[i].setAttribute(attrName, td.innerText);
+            td.setAttribute('data-original', val);
+            td.oninput = () => {
+                const cleanText = td.innerText;
+                td.setAttribute('data-original', cleanText);
+                items[i].setAttribute(attrName, cleanText);
+            };
             tr.appendChild(td);
         }
-        tr.innerHTML += `<td><button class="btn-del" onclick="deleteElement(this, '${type}', ${i})">삭제</button></td>`;
+        tr.innerHTML += `<td><button onclick="this.closest('tr').remove();">X</button></td>`;
         body.appendChild(tr);
     }
 }
 
-// 2. 룰 관리 렌더링 (layers)
+// 룰 관리 렌더링 (각 셀 수정 및 검색 데이터 바인딩 추가)
 function renderRules() {
+    if(!xmlDoc) return;
     const container = document.getElementById('layerContainer');
     container.innerHTML = "";
     const layers = xmlDoc.getElementsByTagName('layer');
 
     for (let i = 0; i < layers.length; i++) {
-        const layerName = layers[i].getElementsByTagName('name')[0]?.textContent || `Layer ${i}`;
-        const div = document.createElement('div');
-        div.className = "layer-title";
-        div.innerText = `레이어: ${layerName}`;
-        container.appendChild(div);
+        const layerName = layers[i].getElementsByTagName('name')[0]?.textContent.trim() || `Layer ${i}`;
+        const layerDiv = document.createElement('div');
+        layerDiv.className = "layer-header";
+        layerDiv.innerText = `LAYER: ${layerName}`;
+        container.appendChild(layerDiv);
 
         const table = document.createElement('table');
-        table.innerHTML = `<thead><tr><th>Row</th><th>Source (col1)</th><th>Destination (col2)</th><th>Action (col4)</th><th>관리</th></tr></thead>`;
+        table.innerHTML = `<thead><tr><th style="width:50px;">Num</th><th>Source</th><th>Destination</th><th>Action</th><th style="width:60px;">삭제</th></tr></thead>`;
         const tbody = document.createElement('tbody');
-
         const rows = layers[i].getElementsByTagName('rowItem');
+
         for (let j = 0; j < rows.length; j++) {
             const tr = document.createElement('tr');
             const cols = rows[j].getElementsByTagName('colItem');
             
-            // 주요 컬럼 추출 (index 기반: 1:Src, 2:Dst, 4:Action)
-            const getColVal = (idx) => Array.from(cols).find(c => c.getAttribute('col') == idx)?.getAttribute('name') || "";
-            
-            tr.innerHTML = `
-                <td>${rows[j].getAttribute('num')}</td>
-                <td contentEditable="true" class="edit-cell" oninput="updateRule(${i}, ${j}, 1, this.innerText)">${getColVal(1)}</td>
-                <td contentEditable="true" class="edit-cell" oninput="updateRule(${i}, ${j}, 2, this.innerText)">${getColVal(2)}</td>
-                <td contentEditable="true" class="edit-cell" oninput="updateRule(${i}, ${j}, 4, this.innerText)">${getColVal(4)}</td>
-                <td><button class="btn-del" onclick="deleteRule(${i}, ${j})">삭제</button></td>
-            `;
+            // 번호 컬럼
+            const numVal = rows[j].getAttribute('num');
+            tr.appendChild(createRuleCell(numVal, false));
+
+            // 소스(1), 데스티네이션(2), 액션(4) 컬럼
+            [1, 2, 4].forEach(colIdx => {
+                const colNode = Array.from(cols).find(c => c.getAttribute('col') == colIdx);
+                const val = colNode ? colNode.getAttribute('name') : "";
+                const td = createRuleCell(val, true);
+                td.oninput = () => {
+                    const cleanText = td.innerText;
+                    td.setAttribute('data-original', cleanText);
+                    if(colNode) colNode.setAttribute('name', cleanText);
+                };
+                tr.appendChild(td);
+            });
+
+            tr.innerHTML += `<td><button onclick="this.closest('tr').remove();">X</button></td>`;
             tbody.appendChild(tr);
         }
         table.appendChild(tbody);
         container.appendChild(table);
-        
-        const addBtn = document.createElement('button');
-        addBtn.innerText = "이 레이어에 룰 추가";
-        addBtn.className = "btn-add";
-        addBtn.style.marginTop = "5px";
-        addBtn.onclick = () => addRuleRow(i);
-        container.appendChild(addBtn);
     }
 }
 
-function updateRule(layerIdx, rowIdx, colIdx, val) {
-    const layer = xmlDoc.getElementsByTagName('layer')[layerIdx];
-    const row = layer.getElementsByTagName('rowItem')[rowIdx];
-    const col = Array.from(row.getElementsByTagName('colItem')).find(c => c.getAttribute('col') == colIdx);
-    if (col) col.setAttribute('name', val);
-}
-
-function deleteElement(btn, type, idx) {
-    if(confirm("정말 삭제하시겠습니까?")) {
-        xmlDoc.getElementsByTagName(type)[idx].remove();
-        renderObjects();
+function createRuleCell(text, editable) {
+    const td = document.createElement('td');
+    td.innerText = text;
+    if (editable) {
+        td.contentEditable = true;
+        td.className = "edit-cell";
     }
+    td.setAttribute('data-original', text);
+    return td;
 }
 
 function exportXML() {
     if (!xmlDoc) return;
     const serializer = new XMLSerializer();
-    let xmlStr = serializer.serializeToString(xmlDoc);
-    // 가독성을 위한 기본 정렬은 브라우저 내장 기능으로 한계가 있어 원본 문자열을 Blob화
-    const blob = new Blob([xmlStr], { type: "text/xml" });
-    const link = document.body.appendChild(document.createElement("a"));
+    const blob = new Blob([serializer.serializeToString(xmlDoc)], { type: "text/xml" });
+    const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "vpm_modified.xml";
+    link.download = "vpm_policy_final.xml";
     link.click();
 }
-
-document.getElementById('objType').onchange = renderObjects;
 </script>
 
 </body>

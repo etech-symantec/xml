@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>VPM Policy Editor</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 20px; font-size: 14px; }
+        .tab-container { margin-bottom: 20px; }
+        .tab-button { padding: 10px 20px; cursor: pointer; border: 1px solid #ccc; background: #f9f9f9; }
+        .tab-button.active { background: #007bff; color: white; font-weight: bold; }
+        .content-section { display: none; border: 1px solid #ccc; padding: 15px; }
+        .content-section.active { display: block; }
+        
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; position: sticky; top: 0; }
+        .edit-cell { background-color: #fffde7; outline: none; }
+        .edit-cell:focus { background-color: #fff9c4; border: 2px solid #ffeb3b; }
+        
+        .controls { background: #f1f1f1; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        button { padding: 8px 12px; cursor: pointer; border-radius: 4px; border: 1px solid #999; }
+        .btn-add { background-color: #28a745; color: white; }
+        .btn-del { background-color: #dc3545; color: white; }
+        .btn-save { background-color: #007bff; color: white; float: right; }
+        
+        .layer-title { background: #e9ecef; font-weight: bold; padding: 5px; margin-top: 20px; border-left: 5px solid #007bff; }
+    </style>
+</head>
+<body>
+
+<h2>VPM XML 정책 관리 도구</h2>
+
+<div class="controls">
+    <input type="file" id="xmlInput" accept=".txt,.xml">
+    <button onclick="processFile()">파일 불러오기</button>
+    <button class="btn-save" onclick="exportXML()">수정본 XML 다운로드</button>
+</div>
+
+<div class="tab-container">
+    <button class="tab-button active" onclick="showTab('objects')">객체 관리 (Condition Objects)</button>
+    <button class="tab-button" onclick="showTab('rules')">룰 관리 (Layers)</button>
+</div>
+
+<div id="objects" class="content-section active">
+    <h3>객체 리스트 (Node, IP, URL 등)</h3>
+    <div style="margin-bottom:10px;">
+        <select id="objType">
+            <option value="node">node (카테고리/URL)</option>
+            <option value="ipobject">ipobject (IP)</option>
+        </select>
+        <button class="btn-add" onclick="addObjectRow()">객체 추가</button>
+    </div>
+    <table id="objTable">
+        <thead><tr id="objHeader"></tr></thead>
+        <tbody id="objBody"></tbody>
+    </table>
+</div>
+
+<div id="rules" class="content-section">
+    <h3>레이어 및 룰 설정</h3>
+    <div id="layerContainer">
+        </div>
+</div>
+
+<script>
+let xmlDoc = null;
+
+function showTab(tabId) {
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+}
+
+function processFile() {
+    const file = document.getElementById('xmlInput').files[0];
+    if (!file) return alert("파일을 선택하세요.");
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const parser = new DOMParser();
+        xmlDoc = parser.parseFromString(e.target.result, "text/xml");
+        renderObjects();
+        renderRules();
+    };
+    reader.readAsText(file);
+}
+
+// 1. 객체 관리 렌더링 (conditionObjects)
+function renderObjects() {
+    const type = document.getElementById('objType').value;
+    const items = xmlDoc.getElementsByTagName(type);
+    const body = document.getElementById('objBody');
+    const header = document.getElementById('objHeader');
+    body.innerHTML = "";
+    header.innerHTML = "";
+
+    if (items.length === 0) return;
+
+    const attrs = items[0].attributes;
+    for (let i = 0; i < attrs.length; i++) {
+        header.innerHTML += `<th>${attrs[i].name}</th>`;
+    }
+    header.innerHTML += `<th>관리</th>`;
+
+    for (let i = 0; i < items.length; i++) {
+        const tr = document.createElement('tr');
+        for (let j = 0; j < attrs.length; j++) {
+            const attrName = attrs[j].name;
+            const td = document.createElement('td');
+            td.innerText = items[i].getAttribute(attrName) || "";
+            td.contentEditable = true;
+            td.className = "edit-cell";
+            td.oninput = () => items[i].setAttribute(attrName, td.innerText);
+            tr.appendChild(td);
+        }
+        tr.innerHTML += `<td><button class="btn-del" onclick="deleteElement(this, '${type}', ${i})">삭제</button></td>`;
+        body.appendChild(tr);
+    }
+}
+
+// 2. 룰 관리 렌더링 (layers)
+function renderRules() {
+    const container = document.getElementById('layerContainer');
+    container.innerHTML = "";
+    const layers = xmlDoc.getElementsByTagName('layer');
+
+    for (let i = 0; i < layers.length; i++) {
+        const layerName = layers[i].getElementsByTagName('name')[0]?.textContent || `Layer ${i}`;
+        const div = document.createElement('div');
+        div.className = "layer-title";
+        div.innerText = `레이어: ${layerName}`;
+        container.appendChild(div);
+
+        const table = document.createElement('table');
+        table.innerHTML = `<thead><tr><th>Row</th><th>Source (col1)</th><th>Destination (col2)</th><th>Action (col4)</th><th>관리</th></tr></thead>`;
+        const tbody = document.createElement('tbody');
+
+        const rows = layers[i].getElementsByTagName('rowItem');
+        for (let j = 0; j < rows.length; j++) {
+            const tr = document.createElement('tr');
+            const cols = rows[j].getElementsByTagName('colItem');
+            
+            // 주요 컬럼 추출 (index 기반: 1:Src, 2:Dst, 4:Action)
+            const getColVal = (idx) => Array.from(cols).find(c => c.getAttribute('col') == idx)?.getAttribute('name') || "";
+            
+            tr.innerHTML = `
+                <td>${rows[j].getAttribute('num')}</td>
+                <td contentEditable="true" class="edit-cell" oninput="updateRule(${i}, ${j}, 1, this.innerText)">${getColVal(1)}</td>
+                <td contentEditable="true" class="edit-cell" oninput="updateRule(${i}, ${j}, 2, this.innerText)">${getColVal(2)}</td>
+                <td contentEditable="true" class="edit-cell" oninput="updateRule(${i}, ${j}, 4, this.innerText)">${getColVal(4)}</td>
+                <td><button class="btn-del" onclick="deleteRule(${i}, ${j})">삭제</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+        container.appendChild(table);
+        
+        const addBtn = document.createElement('button');
+        addBtn.innerText = "이 레이어에 룰 추가";
+        addBtn.className = "btn-add";
+        addBtn.style.marginTop = "5px";
+        addBtn.onclick = () => addRuleRow(i);
+        container.appendChild(addBtn);
+    }
+}
+
+function updateRule(layerIdx, rowIdx, colIdx, val) {
+    const layer = xmlDoc.getElementsByTagName('layer')[layerIdx];
+    const row = layer.getElementsByTagName('rowItem')[rowIdx];
+    const col = Array.from(row.getElementsByTagName('colItem')).find(c => c.getAttribute('col') == colIdx);
+    if (col) col.setAttribute('name', val);
+}
+
+function deleteElement(btn, type, idx) {
+    if(confirm("정말 삭제하시겠습니까?")) {
+        xmlDoc.getElementsByTagName(type)[idx].remove();
+        renderObjects();
+    }
+}
+
+function exportXML() {
+    if (!xmlDoc) return;
+    const serializer = new XMLSerializer();
+    let xmlStr = serializer.serializeToString(xmlDoc);
+    // 가독성을 위한 기본 정렬은 브라우저 내장 기능으로 한계가 있어 원본 문자열을 Blob화
+    const blob = new Blob([xmlStr], { type: "text/xml" });
+    const link = document.body.appendChild(document.createElement("a"));
+    link.href = URL.createObjectURL(blob);
+    link.download = "vpm_modified.xml";
+    link.click();
+}
+
+document.getElementById('objType').onchange = renderObjects;
+</script>
+
+</body>
+</html>

@@ -2,304 +2,439 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>VPM Policy Editor - Rule Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProxySG VPM Editor (MC API + Auth)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; font-size: 13px; background: #f0f2f5; color: #333; }
+        /* 기본 설정 (폰트 크기 유지) */
+        body { padding: 10px; background-color: #f0f2f5; font-size: 0.7rem; user-select: none; }
+        h3 { font-size: 1.1rem; margin-bottom: 0; color: #343a40; }
+        .container-fluid { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         
-        /* 상단 고정 헤더 */
-        .header-container {
-            position: sticky; top: 0; background: white; z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px 20px;
+        /* 탭 스타일 */
+        .custom-tabs { display: flex; flex-wrap: wrap; padding-left: 0; margin-bottom: 0; list-style: none; border-bottom: 1px solid #dee2e6; }
+        .custom-tabs .nav-item { margin-bottom: -1px; }
+        .custom-tabs .nav-link { 
+            border: 1px solid #dee2e6; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; 
+            background-color: #e9ecef; color: #6c757d; padding: 6px 12px; font-size: 0.75rem; margin-right: 4px; cursor: pointer; transition: all 0.2s;
+        }
+        .custom-tabs .nav-link:hover { background-color: #dee2e6; color: #495057; }
+        .custom-tabs .nav-link.active { 
+            color: #0d6efd; background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; border-top: 3px solid #0d6efd; font-weight: bold; z-index: 2; 
         }
 
-        .controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .search-area { background: #e9ecef; padding: 12px; border-radius: 6px; display: flex; align-items: center; gap: 10px; }
+        /* 객체 필터 탭 */
+        .filter-tabs .nav-link { border-radius: 20px; padding: 2px 10px; font-size: 0.7rem; color: #495057; background-color: white; border: 1px solid #dee2e6; margin-right: 4px; cursor: pointer; }
+        .filter-tabs .nav-link.active { background-color: #495057; color: white; border-color: #495057; }
 
-        /* 테이블 및 레이아웃 */
-        .content-area { padding: 20px; }
-        .tab-container { display: flex; gap: 5px; margin-bottom: -1px; }
-        .tab-button { 
-            padding: 10px 25px; cursor: pointer; border: 1px solid #ccc; background: #eee; 
-            border-radius: 6px 6px 0 0; transition: 0.2s; 
-        }
-        .tab-button.active { background: #007bff; color: white; border-color: #007bff; font-weight: bold; }
+        /* 컨테이너 */
+        .content-container { height: 650px; border: 1px solid #dee2e6; border-top: none; overflow: hidden; display: flex; flex-direction: column; background-color: #fff; }
+        .table-wrapper { overflow: auto; flex: 1; }
+        .table { font-size: 0.7rem; margin-bottom: 0; }
+        .table th { background-color: #343a40; color: white; position: sticky; top: 0; z-index: 10; white-space: nowrap; padding: 4px 6px; }
+        .table td { padding: 3px 6px; vertical-align: middle; border-right: 1px solid #dee2e6; height: 26px; }
+
+        /* 비활성화 스타일 (회색 배경, 이텔릭) */
+        .disabled-row, .disabled-row > td { background-color: #f1f3f5 !important; color: #adb5bd !important; font-style: italic; }
+        .table-hover tbody tr.disabled-row:hover > * { background-color: #e9ecef !important; }
+
+        /* Combined Object Layout */
+        .combined-layout { display: flex; height: 100%; }
+        .combined-list-area { width: 30%; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; background-color: #f8f9fa; }
+        .combined-list-scroll { flex: 1; overflow-y: auto; }
+        .combined-detail { width: 70%; padding: 10px; overflow-y: auto; background-color: #fff; }
         
-        .content-section { display: none; background: #fff; border: 1px solid #ccc; padding: 20px; border-radius: 0 0 6px 6px; }
-        .content-section.active { display: block; }
-
-        table { border-collapse: collapse; width: 100%; table-layout: fixed; margin-bottom: 30px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; overflow-wrap: break-word; }
-        th { background-color: #f8f9fa; position: sticky; top: 145px; z-index: 10; }
-        .edit-cell { background-color: #fffde7; outline: none; }
+        /* 기타 UI */
+        .list-group-item { cursor: pointer; font-size: 0.75rem; padding: 6px 10px; border-radius: 0 !important; }
+        .list-group-item.active { background-color: #e8f0fe; color: #0d6efd; border-color: #dee2e6; font-weight: bold; border-left: 3px solid #0d6efd; }
+        .member-card { border: 1px solid #dee2e6; border-radius: 4px; padding: 4px 8px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; background-color: white; font-size: 0.75rem; }
+        .toolbar { background-color: #f8f9fa; border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6; padding: 6px 10px; }
+        .badge-type { font-size: 0.7em; min-width: 45px; display: inline-block; text-align: center; padding: 2px 4px; }
+        .cpl-editor { width: 100%; height: 100%; background-color: #2b2b2b; color: #f8f8f2; border: none; resize: none; outline: none; padding: 10px; font-family: monospace; font-size: 0.8rem; }
+        .inline-input { width: 100%; border: 2px solid #0d6efd; font-size: 0.7rem; padding: 0 4px; }
+        .form-control, .form-select, .btn { font-size: 0.7rem; padding: 3px 8px; }
+        .pagination { margin-bottom: 0; }
         
-        /* 검색 및 버튼 스타일 */
-        .search-box { padding: 8px; width: 300px; border: 1px solid #999; border-radius: 4px; font-size: 14px; }
-        .btn-search { background: #007bff; color: white; border: none; padding: 8px 18px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .nav-btn { padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .match-count { font-weight: bold; color: #007bff; min-width: 80px; text-align: center; font-size: 14px; }
-
-        .highlight { background-color: #ffeb3b; color: #000; font-weight: bold; padding: 1px 2px; }
-        .highlight.active { background-color: #ff9800; color: #fff; outline: 3px solid #e65100; box-shadow: 0 0 5px rgba(0,0,0,0.3); }
-        .layer-header { background: #444; color: white; padding: 10px; margin-top: 20px; font-weight: bold; border-radius: 4px 4px 0 0; }
-        .btn-save { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        /* 우클릭 메뉴 */
+        .context-menu { display: none; position: absolute; z-index: 2000; background-color: white; border: 1px solid #ccc; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); border-radius: 3px; min-width: 140px; font-size: 0.75rem; }
+        .context-menu-item { padding: 6px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .context-menu-item:hover { background-color: #f1f3f5; color: #0d6efd; }
     </style>
 </head>
 <body>
 
-<div class="header-container">
-    <div class="controls-row">
-        <div>
-            <input type="file" id="xmlInput" accept=".txt,.xml">
-            <button onclick="processFile()">파일 불러오기</button>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex align-items-center gap-2">
+            <h3>🛡️ VPM Editor</h3>
+            <div class="d-flex align-items-center gap-1 bg-light p-1 rounded border">
+                <label class="fw-bold text-muted ps-1">MC IP:</label>
+                <input type="text" id="mcIp" class="form-control w-auto" value="172.16.70.200" style="width: 100px;">
+                <label class="fw-bold text-muted ps-1">ID:</label>
+                <input type="text" id="policyId" class="form-control w-auto" value="7B81E581-A2DB-407E-9517-60E89853338F" style="width: 200px;">
+                
+                <div class="vr mx-1"></div>
+                
+                <label class="fw-bold text-muted ps-1">User:</label>
+                <input type="text" id="mcUser" class="form-control w-auto" value="admin" style="width: 70px;">
+                <label class="fw-bold text-muted ps-1">PW:</label>
+                <input type="password" id="mcPass" class="form-control w-auto" placeholder="" style="width: 70px;">
+                
+                <button class="btn btn-info text-white fw-bold" onclick="fetchPolicyFromMC()">GET (API)</button>
+            </div>
         </div>
-        <button class="btn-save" onclick="exportXML()">수정본 XML 다운로드</button>
+        
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-muted small">File:</span>
+            <input type="file" id="fileInput" class="form-control d-inline-block w-auto" accept=".xml,.txt">
+            <button class="btn btn-success" onclick="downloadXML()">💾 Save</button>
+        </div>
     </div>
 
-    <div class="tab-container">
-        <button class="tab-button active" onclick="handleTabSwitch('objects')">객체 관리 (Condition Objects)</button>
-        <button class="tab-button" onclick="handleTabSwitch('rules')">룰 관리 (Layers)</button>
-    </div>
+    <ul class="custom-tabs" role="tablist">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" data-bs-target="#basicObjects">📦 Basic Objects</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" data-bs-target="#combinedObjects">🧩 Combined Objects</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" data-bs-target="#policy">📜 Policy</a></li>
+    </ul>
 
-    <div class="search-area">
-        <span id="searchLabel" style="font-weight:bold; margin-right:5px;">객체 검색:</span>
-        <select id="objType" onchange="renderObjects()" style="padding:7px; display:inline-block;">
-            <option value="node">node (URL/Category)</option>
-            <option value="ipobject">ipobject (IP)</option>
-        </select>
-        <input type="text" id="commonFilter" class="search-box" placeholder="키워드 입력 후 엔터..." onkeydown="if(event.key==='Enter') executeSearch()">
-        <button class="btn-search" onclick="executeSearch()">검색 & 필터</button>
-        <button class="nav-btn" onclick="moveMatch(-1)">▲</button>
-        <button class="nav-btn" onclick="moveMatch(1)">▼</button>
-        <span id="matchDisplay" class="match-count">0 / 0</span>
-        <button onclick="resetSearch()" style="margin-left:5px;">전체보기</button>
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="basicObjects">
+            <div class="toolbar d-flex flex-wrap gap-3 align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold text-muted small">Filter:</span>
+                    <ul class="nav filter-tabs" id="objTypeTabs">
+                        <li class="nav-item"><a class="nav-link active" onclick="setBasicObjFilter('All')">All</a></li>
+                        <li class="nav-item"><a class="nav-link" onclick="setBasicObjFilter('URL List')">URL List</a></li>
+                        <li class="nav-item"><a class="nav-link" onclick="setBasicObjFilter('IP')">IP Address</a></li>
+                    </ul>
+                </div>
+
+                <div class="vr"></div>
+
+                <select id="rowsPerPage" class="form-select w-auto" onchange="changeItemsPerPage()">
+                    <option value="50" selected>50개</option>
+                    <option value="100">100개</option>
+                    <option value="200">200개</option>
+                    <option value="500">500개</option>
+                    <option value="1000">1000개</option>
+                </select>
+
+                <div class="d-flex gap-2 ms-auto">
+                    <input type="text" id="objSearch" class="form-control w-auto" style="min-width: 200px;" placeholder="Name Search (Enter)" onkeypress="if(event.key==='Enter') applyBasicFilter()">
+                    <button class="btn btn-primary" onclick="applyBasicFilter()">🔍</button>
+                    <button class="btn btn-outline-success" onclick="openAddModal()">➕ 추가</button>
+                </div>
+            </div>
+            
+            <div class="content-container">
+                <div class="table-wrapper">
+                    <table class="table table-bordered table-hover align-middle mb-0">
+                        <thead class="table-light sticky-top"><tr><th width="10%">Type</th><th width="25%">Name</th><th width="60%">Value</th><th width="5%">Del</th></tr></thead>
+                        <tbody id="basicObjTableBody"><tr><td colspan="4" class="text-center py-5 text-muted">파일을 업로드하거나 상단 API로 데이터를 불러오세요.</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                <span id="basicTotalCount" class="text-muted fw-bold small">Total: 0</span>
+                <nav><ul class="pagination pagination-sm" id="paginationControls"></ul></nav>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="combinedObjects">
+            <div class="toolbar d-flex justify-content-between align-items-center">
+                <div class="d-flex gap-2">
+                    <input type="text" id="combSearch" class="form-control d-inline-block w-auto" placeholder="그룹 이름 검색" onkeypress="if(event.key==='Enter') applyCombinedFilter()">
+                    <button class="btn btn-primary" onclick="applyCombinedFilter()">🔍 검색</button>
+                </div>
+                <button class="btn btn-outline-primary" onclick="addCombinedGroup()">➕ 새 그룹</button>
+            </div>
+            <div class="content-container">
+                <div class="combined-layout">
+                    <div class="combined-list-area">
+                        <div class="combined-list-scroll"><div class="list-group list-group-flush" id="combinedListGroup"><div class="p-3 text-center text-muted">목록 없음</div></div></div>
+                        <div class="p-2 border-top bg-white"><nav class="d-flex justify-content-center"><ul class="pagination pagination-sm mb-0" id="combListPagination"></ul></nav></div>
+                    </div>
+                    <div class="combined-detail">
+                        <div id="combinedDetailView" style="display:none;">
+                            <div class="d-flex justify-content-between align-items-start mb-2 border-bottom pb-2">
+                                <div><h4 id="selectedCombName" class="mb-0 text-primary fs-6">Name</h4><small class="text-muted">Combined Object</small></div>
+                                <button class="btn btn-danger btn-sm" onclick="deleteCurrentGroup()">🗑 삭제</button>
+                            </div>
+                            <h6 class="fw-bold mb-2 text-dark">📂 포함된 객체 (Members)</h6>
+                            <div id="memberListArea" class="mb-3"></div>
+                            <div class="card bg-light border-0"><div class="card-body p-2 text-center"><button class="btn btn-primary w-100" onclick="openMemberSelectModal()">➕ 멤버 추가</button></div></div>
+                        </div>
+                        <div id="combinedEmptyState" class="text-center text-muted mt-5"><h5>👈 왼쪽에서 그룹을 선택하세요</h5></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="policy">
+            <div class="d-flex align-items-end border-bottom">
+                <ul class="custom-tabs flex-grow-1 border-bottom-0" id="layerTabs">
+                    <li class="nav-item"><span class="text-muted p-2 small d-block">파일 로드 필요</span></li>
+                </ul>
+                <button class="btn btn-sm btn-secondary mb-1 me-1" onclick="addNewLayer()" title="새 레이어">➕ Layer</button>
+            </div>
+            <div class="toolbar d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-secondary me-2" id="layerTypeBadge">Type</span>
+                    <span class="fw-bold text-primary" id="layerInfo">Info</span>
+                </div>
+                <div>
+                    <span class="text-muted small me-3">💡 우클릭 메뉴: 룰 추가 / 삭제 / 비활성</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCurrentLayer()">🗑 Layer 삭제</button>
+                </div>
+            </div>
+            <div class="content-container" id="policyContainer"></div>
+        </div>
     </div>
 </div>
 
-<div class="content-area">
-    <div id="objects" class="content-section active">
-        <table id="objTable">
-            <thead><tr id="objHeader"></tr></thead>
-            <tbody id="objBody"></tbody>
-        </table>
-    </div>
-    <div id="rules" class="content-section">
-        <div id="layerContainer"></div>
-    </div>
+<div id="policyContextMenu" class="context-menu">
+    <div class="context-menu-item" onclick="insertRuleAt(-1)">🔼 위쪽에 룰 추가</div>
+    <div class="context-menu-item" onclick="insertRuleAt(1)">🔽 아래쪽에 룰 추가</div>
+    <div class="context-menu-item" onclick="toggleDisableRule()">🚫 활성/비활성 토글</div>
+    <div class="context-menu-item text-danger" onclick="deleteTargetRule()">🗑 이 룰 삭제</div>
 </div>
+
+<div class="modal fade" id="addBasicModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header py-2"><h5 class="modal-title fs-6">객체 추가</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><select id="newObjType" class="form-select mb-2"><option value="URL List">URL List</option><option value="IP">IP Address</option></select><input type="text" id="newObjName" class="form-control mb-2" placeholder="이름"><textarea id="newObjValue" class="form-control" rows="4" placeholder="값"></textarea></div><div class="modal-footer py-1"><button class="btn btn-primary w-100" onclick="addBasicObject()">추가</button></div></div></div></div>
+<div class="modal fade" id="memberSelectModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header py-2"><h5 class="modal-title fs-6">멤버 추가</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="d-flex gap-2 mb-2"><input type="text" id="memberSearchInput" class="form-control" placeholder="검색 (Enter)" onkeypress="if(event.key==='Enter') searchMemberCandidates()"><button class="btn btn-secondary" onclick="searchMemberCandidates()">검색</button></div><div style="height:350px;overflow-y:auto;border:1px solid #dee2e6"><table class="table table-hover table-sm"><tbody id="memberCandidateBody"><tr><td class="text-center py-3">검색어를 입력하세요.</td></tr></tbody></table></div></div></div></div></div>
 
 <script>
-let xmlDoc = null;
-let matches = [];
-let currentMatchIdx = -1;
-let activeTab = 'objects';
+    let xmlDoc = null;
+    let basicObjects = [], combinedObjects = [], allObjNames = [];
+    let currentBasicPage = 1, currentCombListPage = 1, itemsPerPage = 50;
+    let selectedCombIndex = -1, filteredCombinedObjects = [];
+    let currentLayerIndex = 0;
+    let currentBasicObjFilter = "All";
+    let contextMenuTargetRowIndex = -1; 
+    let contextMenuTargetRowElement = null;
 
-function handleTabSwitch(tabId) {
-    activeTab = tabId;
-    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-    document.getElementById(tabId).classList.add('active');
-    
-    // 탭 이동 시 UI 및 검색 상태 초기화
-    document.getElementById('searchLabel').innerText = tabId === 'objects' ? "객체 검색:" : "룰 검색:";
-    document.getElementById('objType').style.display = tabId === 'objects' ? "inline-block" : "none";
-    resetSearch();
-}
-
-function processFile() {
-    const file = document.getElementById('xmlInput').files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        xmlDoc = new DOMParser().parseFromString(e.target.result, "text/xml");
-        renderObjects();
-        renderRules();
-    };
-    reader.readAsText(file);
-}
-
-// 공통 검색 실행 함수 (객체 탭 / 룰 탭 구분)
-function executeSearch() {
-    const term = document.getElementById('commonFilter').value.trim().toLowerCase();
-    const containerId = activeTab === 'objects' ? '#objBody' : '#layerContainer';
-    const rows = document.querySelectorAll(`${containerId} tr`);
-    
-    matches = [];
-    currentMatchIdx = -1;
-
-    if (!term) { resetSearch(); return; }
-
-    rows.forEach(row => {
-        let isRowVisible = false;
-        // 룰 관리에서는 모든 셀(td)을 대상으로 검색
-        const cells = row.querySelectorAll('td');
-
-        cells.forEach(cell => {
-            const originalText = cell.getAttribute('data-original') || cell.innerText;
-            if (!cell.hasAttribute('data-original')) cell.setAttribute('data-original', originalText);
-
-            if (originalText.toLowerCase().includes(term)) {
-                isRowVisible = true;
-                const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "gi");
-                cell.innerHTML = originalText.replace(regex, `<span class="highlight">$1</span>`);
-                cell.querySelectorAll('.highlight').forEach(h => matches.push(h));
-            } else {
-                cell.innerHTML = originalText;
-            }
-        });
-
-        row.style.display = isRowVisible ? "" : "none";
-    });
-
-    updateMatchDisplay();
-    if (matches.length > 0) moveMatch(1);
-    else alert("일치하는 결과가 없습니다.");
-}
-
-function resetSearch() {
-    document.getElementById('commonFilter').value = "";
-    const containerId = activeTab === 'objects' ? '#objBody' : '#layerContainer';
-    const rows = document.querySelectorAll(`${containerId} tr`);
-    
-    rows.forEach(row => {
-        row.style.display = "";
-        row.querySelectorAll('td').forEach(cell => {
-            const original = cell.getAttribute('data-original');
-            if (original !== null) cell.innerHTML = original;
-        });
-    });
-    matches = [];
-    currentMatchIdx = -1;
-    updateMatchDisplay();
-}
-
-function moveMatch(direction) {
-    if (matches.length === 0) return;
-    if (currentMatchIdx >= 0 && matches[currentMatchIdx]) matches[currentMatchIdx].classList.remove('active');
-
-    currentMatchIdx += direction;
-    if (currentMatchIdx >= matches.length) currentMatchIdx = 0;
-    if (currentMatchIdx < 0) currentMatchIdx = matches.length - 1;
-
-    const target = matches[currentMatchIdx];
-    target.classList.add('active');
-    
-    const offset = 220; 
-    const elementPosition = target.getBoundingClientRect().top + window.pageYOffset;
-    window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
-    
-    updateMatchDisplay();
-}
-
-function updateMatchDisplay() {
-    document.getElementById('matchDisplay').innerText = matches.length > 0 ? `${currentMatchIdx + 1} / ${matches.length}` : "0 / 0";
-}
-
-// 객체 리스트 렌더링
-function renderObjects() {
-    if(!xmlDoc) return;
-    const type = document.getElementById('objType').value;
-    const items = xmlDoc.getElementsByTagName(type);
-    const body = document.getElementById('objBody');
-    const header = document.getElementById('objHeader');
-    body.innerHTML = ""; header.innerHTML = "";
-    if (items.length === 0) return;
-
-    const attrs = items[0].attributes;
-    for (let i = 0; i < attrs.length; i++) header.innerHTML += `<th>${attrs[i].name}</th>`;
-    header.innerHTML += `<th style="width:60px;">삭제</th>`;
-
-    for (let i = 0; i < items.length; i++) {
-        const tr = document.createElement('tr');
-        for (let j = 0; j < attrs.length; j++) {
-            const attrName = attrs[j].name;
-            const td = document.createElement('td');
-            const val = items[i].getAttribute(attrName) || "";
-            td.innerText = val;
-            td.contentEditable = true;
-            td.className = "edit-cell";
-            td.setAttribute('data-original', val);
-            td.oninput = () => {
-                const cleanText = td.innerText;
-                td.setAttribute('data-original', cleanText);
-                items[i].setAttribute(attrName, cleanText);
-            };
-            tr.appendChild(td);
-        }
-        tr.innerHTML += `<td><button onclick="this.closest('tr').remove();">X</button></td>`;
-        body.appendChild(tr);
+    function changeItemsPerPage() {
+        const val = document.getElementById("rowsPerPage").value;
+        itemsPerPage = parseInt(val, 10);
+        currentBasicPage = 1; currentCombListPage = 1;
+        renderBasicTable();
+        if(filteredCombinedObjects.length > 0) renderCombinedList(); 
     }
-}
 
-// 룰 관리 렌더링 (각 셀 수정 및 검색 데이터 바인딩 추가)
-function renderRules() {
-    if(!xmlDoc) return;
-    const container = document.getElementById('layerContainer');
-    container.innerHTML = "";
-    const layers = xmlDoc.getElementsByTagName('layer');
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) { loadXMLFromString(e.target.result); };
+        reader.readAsText(file);
+    });
 
-    for (let i = 0; i < layers.length; i++) {
-        const layerName = layers[i].getElementsByTagName('name')[0]?.textContent.trim() || `Layer ${i}`;
-        const layerDiv = document.createElement('div');
-        layerDiv.className = "layer-header";
-        layerDiv.innerText = `LAYER: ${layerName}`;
-        container.appendChild(layerDiv);
+    // [업데이트] MC API 호출 (Auth 포함)
+    async function fetchPolicyFromMC() {
+        const ip = document.getElementById('mcIp').value;
+        const id = document.getElementById('policyId').value;
+        const user = document.getElementById('mcUser').value;
+        const pass = document.getElementById('mcPass').value;
+        
+        if(!pass) { alert("비밀번호를 입력하세요."); return; }
 
-        const table = document.createElement('table');
-        table.innerHTML = `<thead><tr><th style="width:50px;">Num</th><th>Source</th><th>Destination</th><th>Action</th><th style="width:60px;">삭제</th></tr></thead>`;
-        const tbody = document.createElement('tbody');
-        const rows = layers[i].getElementsByTagName('rowItem');
+        const url = `https://${ip}:8082/api/policies/${id}/content`;
+        
+        // Basic Auth 헤더 (Base64 인코딩)
+        const authHeader = "Basic " + btoa(user + ":" + pass);
 
-        for (let j = 0; j < rows.length; j++) {
-            const tr = document.createElement('tr');
-            const cols = rows[j].getElementsByTagName('colItem');
+        try {
+            alert(`요청 중...\nURL: ${url}\n(인증서 확인 필수: https://${ip}:8082 새 탭에서 접속)`);
             
-            // 번호 컬럼
-            const numVal = rows[j].getAttribute('num');
-            tr.appendChild(createRuleCell(numVal, false));
-
-            // 소스(1), 데스티네이션(2), 액션(4) 컬럼
-            [1, 2, 4].forEach(colIdx => {
-                const colNode = Array.from(cols).find(c => c.getAttribute('col') == colIdx);
-                const val = colNode ? colNode.getAttribute('name') : "";
-                const td = createRuleCell(val, true);
-                td.oninput = () => {
-                    const cleanText = td.innerText;
-                    td.setAttribute('data-original', cleanText);
-                    if(colNode) colNode.setAttribute('name', cleanText);
-                };
-                tr.appendChild(td);
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': authHeader,
+                    'Accept': 'application/json'
+                }
             });
 
-            tr.innerHTML += `<td><button onclick="this.closest('tr').remove();">X</button></td>`;
-            tbody.appendChild(tr);
+            if (response.status === 401) throw new Error("로그인 실패 (401 Unauthorized).\n아이디와 비밀번호를 확인하세요.");
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            
+            const json = await response.json();
+            
+            if (json.content && json.content.xml) {
+                loadXMLFromString(json.content.xml);
+                alert("API 로드 성공!");
+            } else {
+                alert("응답에 'content.xml' 필드가 없습니다.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("API 호출 실패:\n" + error.message + "\n\n[해결책]\n1. 브라우저에서 https://" + ip + ":8082 로 접속하여 인증서를 수락(무시하고 이동)하세요.\n2. CORS 오류일 경우 브라우저 보안 설정을 확인하세요.");
         }
-        table.appendChild(tbody);
-        container.appendChild(table);
     }
-}
 
-function createRuleCell(text, editable) {
-    const td = document.createElement('td');
-    td.innerText = text;
-    if (editable) {
-        td.contentEditable = true;
-        td.className = "edit-cell";
+    function loadXMLFromString(xmlString) {
+        const parser = new DOMParser();
+        xmlDoc = parser.parseFromString(xmlString, "text/xml");
+        if(xmlDoc.getElementsByTagName("parsererror").length > 0) {
+            alert("XML 파싱 오류: 올바른 XML 형식이 아닙니다.");
+            return;
+        }
+        parseAllObjects();
+        initLayerTabs();
+        renderBasicTable();
     }
-    td.setAttribute('data-original', text);
-    return td;
-}
 
-function exportXML() {
-    if (!xmlDoc) return;
-    const serializer = new XMLSerializer();
-    const blob = new Blob([serializer.serializeToString(xmlDoc)], { type: "text/xml" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "vpm_policy_final.xml";
-    link.click();
-}
+    // --- 객체 관리 ---
+    function parseAllObjects() {
+        basicObjects = []; combinedObjects = []; allObjNames = [];
+        const conds = xmlDoc.getElementsByTagName("conditionObjects")[0]; if (!conds) return;
+        for (let n of conds.getElementsByTagName("node")) { basicObjects.push({type:'URL List', name:n.getAttribute('n'), value:n.getAttribute('u-l'), element:n, attr:'u-l'}); allObjNames.push({name:n.getAttribute('n'), type:'URL List'}); }
+        for (let ip of conds.getElementsByTagName("ipobject")) { basicObjects.push({type:'IP', name:ip.getAttribute('name'), value:ip.getAttribute('value'), element:ip, attr:'value'}); allObjNames.push({name:ip.getAttribute('name'), type:'IP'}); }
+        const combs = conds.getElementsByTagName("comb-obj");
+        for (let i=0; i<combs.length; i++) {
+            let m=[]; for(let c of combs[i].children) if(c.getAttribute('n')) m.push(c.getAttribute('n'));
+            combinedObjects.push({originalIndex:i, name:combs[i].getAttribute('name'), members:m, element:combs[i]}); allObjNames.push({name:combs[i].getAttribute('name'), type:'Combined'});
+        }
+        renderBasicTable(); applyCombinedFilter();
+    }
+
+    function setBasicObjFilter(type) {
+        currentBasicObjFilter = type;
+        document.querySelectorAll('#objTypeTabs .nav-link').forEach(el => {
+            if(el.innerText === type || (type==='All' && el.innerText==='All')) el.classList.add('active');
+            else el.classList.remove('active');
+        });
+        currentBasicPage = 1; renderBasicTable();
+    }
+    function applyBasicFilter(){ currentBasicPage=1; renderBasicTable(); }
+    function renderBasicTable(){ 
+        const s=document.getElementById('objSearch').value.toLowerCase().trim();
+        const tb=document.getElementById("basicObjTableBody");
+        let f=basicObjects.filter(o=>(currentBasicObjFilter==="All"||o.type===currentBasicObjFilter)&&o.name.toLowerCase().includes(s));
+        tb.innerHTML=""; document.getElementById("basicTotalCount").innerText=`Total: ${f.length}`;
+        if(f.length===0){tb.innerHTML=`<tr><td colspan="4" class="text-center py-5">없음</td></tr>`; return;}
+        f.slice((currentBasicPage-1)*itemsPerPage, currentBasicPage*itemsPerPage).forEach(o=>{
+            let b=o.type==='URL List'?'bg-primary':(o.type==='IP'?'bg-success':'bg-warning text-dark');
+            tb.innerHTML+=`<tr><td class="text-center"><span class="badge ${b} badge-type">${o.type}</span></td><td class="fw-bold text-truncate" style="max-width:200px">${o.name}</td><td><textarea class="form-control" rows="1" onchange="updateBasicVal(this,'${o.name}')">${o.value}</textarea></td><td class="text-center"><button class="btn btn-outline-danger btn-sm">🗑</button></td></tr>`;
+        });
+        renderPagination("paginationControls", f.length, currentBasicPage, p=>{currentBasicPage=p;renderBasicTable();});
+    }
+
+    function updateBasicVal(el,n){const o=basicObjects.find(x=>x.name===n); if(o){o.value=el.value; o.element.setAttribute(o.attr, el.value);}}
+    function applyCombinedFilter(){ const s=document.getElementById('combSearch').value.toLowerCase().trim(); filteredCombinedObjects=combinedObjects.filter(o=>o.name.toLowerCase().includes(s)); currentCombListPage=1; renderCombinedList(); }
+    function renderCombinedList(){
+        const l=document.getElementById("combinedListGroup"); l.innerHTML=""; 
+        if(filteredCombinedObjects.length===0){l.innerHTML=`<div class="p-3 text-center">없음</div>`; document.getElementById("combListPagination").innerHTML=""; return;}
+        const start=(currentCombListPage-1)*itemsPerPage;
+        filteredCombinedObjects.slice(start, start+itemsPerPage).forEach((o,i)=>{
+            const gIdx=start+i;
+            l.innerHTML+=`<div class="list-group-item list-group-item-action ${gIdx===selectedCombIndex?'active':''}" onclick="selectCombined(${gIdx})"><div class="d-flex justify-content-between"><span>${o.name}</span><span class="badge bg-secondary rounded-pill">${o.members.length}</span></div></div>`;
+        });
+        renderPagination("combListPagination", filteredCombinedObjects.length, currentCombListPage, p=>{currentCombListPage=p;renderCombinedList();});
+    }
+    function selectCombined(idx){
+        selectedCombIndex=idx; renderCombinedList();
+        const o=filteredCombinedObjects[idx]; document.getElementById("combinedEmptyState").style.display="none"; document.getElementById("combinedDetailView").style.display="block"; document.getElementById("selectedCombName").innerText=o.name;
+        const a=document.getElementById("memberListArea"); a.innerHTML="";
+        if(o.members.length===0) a.innerHTML=`<div class="text-muted text-center p-3 border bg-light">멤버 없음</div>`;
+        else o.members.forEach(m=>{
+            const f=allObjNames.find(x=>x.name===m), t=f?f.type:"Unknown", b=t==='URL List'?'bg-primary':(t==='IP'?'bg-success':'bg-warning text-dark');
+            a.innerHTML+=`<div class="member-card"><div class="d-flex align-items-center"><span class="badge ${b} me-2" style="width:50px;">${t}</span><span class="fw-bold">${m}</span></div><button class="btn btn-sm btn-outline-danger" onclick="removeMember('${m}')">✕</button></div>`;
+        });
+    }
+    function removeMember(m){ const o=filteredCombinedObjects[selectedCombIndex]; o.members=o.members.filter(x=>x!==m); for(let c of o.element.children){if(c.getAttribute('n')===m){o.element.removeChild(c);break;}} selectCombined(selectedCombIndex); }
+    function openAddModal(){new bootstrap.Modal(document.getElementById('addBasicModal')).show();}
+    function addBasicObject(){ const t=document.getElementById("newObjType").value,n=document.getElementById("newObjName").value,v=document.getElementById("newObjValue").value; if(!n)return; const c=xmlDoc.getElementsByTagName("conditionObjects")[0]; let e; if(t==="URL List"){e=xmlDoc.createElement("node");e.setAttribute("n",n);e.setAttribute("u-l",v);e.setAttribute("type","100");}else{e=xmlDoc.createElement("ipobject");e.setAttribute("name",n);e.setAttribute("value",v);} c.appendChild(e); bootstrap.Modal.getInstance(document.getElementById('addBasicModal')).hide(); parseAllObjects(); }
+    function addCombinedGroup(){ const n=prompt("새 그룹 이름:"); if(!n)return; const c=xmlDoc.getElementsByTagName("conditionObjects")[0], e=xmlDoc.createElement("comb-obj"); e.setAttribute("name",n); c.appendChild(e); parseAllObjects(); }
+    function deleteCurrentGroup(){ if(confirm("삭제?")){ const o=filteredCombinedObjects[selectedCombIndex]; o.element.parentNode.removeChild(o.element); parseAllObjects(); document.getElementById("combinedDetailView").style.display="none"; } }
+    function openMemberSelectModal(){ new bootstrap.Modal(document.getElementById('memberSelectModal')).show(); document.getElementById("memberSearchInput").value=""; document.getElementById("memberCandidateBody").innerHTML=""; }
+    function searchMemberCandidates(){
+        const q=document.getElementById("memberSearchInput").value.toLowerCase(), cg=filteredCombinedObjects[selectedCombIndex], tb=document.getElementById("memberCandidateBody"); tb.innerHTML="";
+        let c=0; for(let i of allObjNames){ if(c>50)break; if(i.name!==cg.name && !cg.members.includes(i.name) && i.name.toLowerCase().includes(q)){ c++; tb.innerHTML+=`<tr><td>${i.type}</td><td>${i.name}</td><td><button class="btn btn-sm btn-primary" onclick="addMemberFromModal('${i.name}')">선택</button></td></tr>`; } }
+        if(c===0)tb.innerHTML=`<tr><td colspan="3" class="text-center">없음</td></tr>`;
+    }
+    function addMemberFromModal(n){ const o=filteredCombinedObjects[selectedCombIndex]; o.members.push(n); const c=xmlDoc.createElement("child"); c.setAttribute("n",n); o.element.appendChild(c); bootstrap.Modal.getInstance(document.getElementById('memberSelectModal')).hide(); selectCombined(selectedCombIndex); }
+    function renderPagination(id, total, curr, cb) {
+        const nav = document.getElementById(id); nav.innerHTML = ""; const pages = Math.ceil(total / itemsPerPage); if (pages <= 1) return;
+        const li = (text, page, active, disabled) => `<li class="page-item ${active?'active':''} ${disabled?'disabled':''}"><button class="page-link" onclick="(${cb})(${page})">${text}</button></li>`;
+        nav.innerHTML += li("Prev", curr-1, false, curr===1);
+        let start = Math.max(1, curr - 2); let end = Math.min(pages, curr + 2);
+        if(start > 1) { nav.innerHTML += li("1", 1, false, false); if(start > 2) nav.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`; }
+        for (let i = start; i <= end; i++) nav.innerHTML += li(i, i, i === curr, false);
+        if(end < pages) { if(end < pages - 1) nav.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`; nav.innerHTML += li(pages, pages, false, false); }
+        nav.innerHTML += li("Next", curr+1, false, curr===pages);
+    }
+
+    // --- Policy ---
+    function initLayerTabs() {
+        const layers = xmlDoc.getElementsByTagName("layer");
+        const tabContainer = document.getElementById("layerTabs"); tabContainer.innerHTML = "";
+        for(let i=0; i<layers.length; i++) {
+            const name = layers[i].getElementsByTagName("name")[0]?.textContent.trim() || `Layer ${i+1}`;
+            const li = document.createElement("li"); li.className = "nav-item";
+            const a = document.createElement("a"); a.className = `nav-link ${i === currentLayerIndex ? 'active' : ''}`;
+            a.innerText = name; a.onclick = () => { currentLayerIndex = i; initLayerTabs(); renderPolicyLayer(); };
+            li.appendChild(a); tabContainer.appendChild(li);
+        }
+        if(layers.length > 0) renderPolicyLayer();
+    }
+    function renderPolicyLayer() {
+        const curLayer = xmlDoc.getElementsByTagName("layer")[currentLayerIndex];
+        const container = document.getElementById("policyContainer"); const info = document.getElementById("layerInfo"); const badge = document.getElementById("layerTypeBadge");
+        container.innerHTML = ""; if(!curLayer) return;
+        const layerName = curLayer.getElementsByTagName("name")[0]?.textContent.trim(); const rawCplNode = curLayer.getElementsByTagName("raw-cpl")[0];
+        if (rawCplNode) {
+            info.innerText = layerName; badge.innerText = "CPL"; badge.className = "badge bg-warning text-dark me-2";
+            const txt = rawCplNode.textContent.replace("<![CDATA[","").replace("]]>","");
+            const ta = document.createElement("textarea"); ta.className = "cpl-editor"; ta.value = txt;
+            ta.onchange = function() { rawCplNode.textContent = `<![CDATA[${this.value}]]>`; };
+            container.appendChild(ta);
+        } else {
+            const rows = curLayer.getElementsByTagName("rowItem"); info.innerText = `${layerName} (${rows.length} Rules)`; badge.innerText = "Policy"; badge.className = "badge bg-info text-dark me-2";
+            const tableWrapper = document.createElement("div"); tableWrapper.className = "table-wrapper";
+            const table = document.createElement("table"); table.className = "table table-bordered table-hover text-nowrap";
+            table.innerHTML = `<thead class="table-dark sticky-top"></thead><tbody></tbody>`;
+            tableWrapper.appendChild(table); container.appendChild(tableWrapper); renderStandardTable(rows, table);
+        }
+    }
+    function renderStandardTable(rows, table) {
+        const tbody = table.querySelector("tbody"); const thead = table.querySelector("thead");
+        const knownCols = {'no':'No.', 'so':'Source', 'de':'Destination', 'se':'Service', 'ac':'Action', 'tr':'Track', 'ep':'Target', 'ti':'Time', 'co':'Comment'};
+        let columnIds = new Set(['no']); for(let i=0; i<Math.min(rows.length, 50); i++) { for(let c of rows[i].getElementsByTagName("colItem")) columnIds.add(c.getAttribute("id")); }
+        const standardOrder = ['no', 'so', 'de', 'se', 'ac', 'tr', 'ti', 'ep', 'co']; let finalColOrder = [];
+        standardOrder.forEach(id => { if(columnIds.has(id)) { finalColOrder.push(id); columnIds.delete(id); } }); columnIds.forEach(id => finalColOrder.push(id));
+        let trH = document.createElement("tr"); finalColOrder.forEach(id => { let th = document.createElement("th"); th.innerText = knownCols[id] || id.toUpperCase(); if(id==='no') th.style.width="40px"; trH.appendChild(th); }); thead.appendChild(trH);
+        const limit = Math.min(rows.length, 500); const frag = document.createDocumentFragment();
+        for(let i=0; i<limit; i++) {
+            let row = rows[i]; let tr = document.createElement("tr");
+            if(row.getAttribute("enabled") === "false") tr.classList.add("disabled-row");
+            tr.addEventListener('contextmenu', function(e) { handleContextMenu(e, i, row); });
+            let colData = {}; for(let c of row.getElementsByTagName("colItem")) colData[c.getAttribute("id")] = { name: c.getAttribute("name"), element: c };
+            finalColOrder.forEach(id => {
+                let td = document.createElement("td"); let cell = colData[id]; let val = cell ? (cell.name || "") : "";
+                if(id === 'no') { td.innerText = (i+1); td.classList.add("text-center", "fw-bold", "bg-light"); } 
+                else {
+                    td.innerText = val || "-"; td.classList.add("editable-cell"); if(!val) td.classList.add("text-muted");
+                    td.onclick = function() {
+                        if(this.querySelector("input")) return; const input = document.createElement("input"); input.type="text"; input.value=(this.innerText==="-")?"":this.innerText; input.className="inline-input";
+                        const save = () => { const v = input.value.trim(); if(cell && cell.element) cell.element.setAttribute("name", v); else if(v!=="") { const nc = xmlDoc.createElement("colItem"); nc.setAttribute("id", id); nc.setAttribute("name", v); row.appendChild(nc); cell = {name: v, element: nc}; colData[id] = cell; } this.innerText = v || "-"; if(!v) this.classList.add("text-muted"); else this.classList.remove("text-muted"); };
+                        input.onblur = save; input.onkeydown = (k) => { if(k.key==='Enter') { save(); input.blur(); } else if(k.key==='Escape') this.innerText = val||"-"; };
+                        this.innerHTML = ""; this.appendChild(input); input.focus();
+                    };
+                }
+                tr.appendChild(td);
+            });
+            frag.appendChild(tr);
+        }
+        tbody.appendChild(frag);
+    }
+    const contextMenu = document.getElementById("policyContextMenu");
+    document.addEventListener('click', () => contextMenu.style.display = 'none');
+    function handleContextMenu(e, rowIndex, rowElement) { e.preventDefault(); contextMenuTargetRowIndex = rowIndex; contextMenuTargetRowElement = rowElement; contextMenu.style.display = 'block'; contextMenu.style.left = `${e.pageX}px`; contextMenu.style.top = `${e.pageY}px`; }
+    function toggleDisableRule() { if (!contextMenuTargetRowElement) return; const current = contextMenuTargetRowElement.getAttribute("enabled"); contextMenuTargetRowElement.setAttribute("enabled", current === "false" ? "true" : "false"); renderPolicyLayer(); }
+    function insertRuleAt(offset) { const curLayer = xmlDoc.getElementsByTagName("layer")[currentLayerIndex]; const newRow = xmlDoc.createElement("rowItem"); newRow.setAttribute("enabled", "true"); ['so', 'de', 'se', 'ac'].forEach(id => { const col = xmlDoc.createElement("colItem"); col.setAttribute("id", id); col.setAttribute("name", id==='ac'?'Allow':'Any'); newRow.appendChild(col); }); if (contextMenuTargetRowIndex === -1) { curLayer.appendChild(newRow); } else { const rows = curLayer.getElementsByTagName("rowItem"); const targetRow = rows[contextMenuTargetRowIndex]; if (offset === -1) curLayer.insertBefore(newRow, targetRow); else { if (targetRow.nextSibling) curLayer.insertBefore(newRow, targetRow.nextSibling); else curLayer.appendChild(newRow); } } renderPolicyLayer(); }
+    function deleteTargetRule() { if (!contextMenuTargetRowElement || !contextMenuTargetRowElement.parentNode || !confirm("삭제?")) return; contextMenuTargetRowElement.parentNode.removeChild(contextMenuTargetRowElement); renderPolicyLayer(); }
+    function addNewLayer() { const n = prompt("새 레이어 이름:"); if (!n) return; const nl = xmlDoc.createElement("layer"); nl.setAttribute("disabled", "false"); const nt = xmlDoc.createElement("name"); nt.textContent = n; nl.appendChild(nt); xmlDoc.getElementsByTagName("vpmapp")[0].appendChild(nl); const ls = xmlDoc.getElementsByTagName("layer"); currentLayerIndex = ls.length - 1; initLayerTabs(); }
+    function deleteCurrentLayer() { if(!confirm("삭제?")) return; const l = xmlDoc.getElementsByTagName("layer")[currentLayerIndex]; l.parentNode.removeChild(l); currentLayerIndex = Math.max(0, currentLayerIndex - 1); initLayerTabs(); }
+    function downloadXML() { if (!xmlDoc) return alert("데이터 없음"); const s = new XMLSerializer(); const b = new Blob([s.serializeToString(xmlDoc)], {type: "text/xml"}); const l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = "vpm_mc_final.xml"; l.click(); }
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

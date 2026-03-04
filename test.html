@@ -1,36 +1,22 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProxySG XML Editor</title>
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <link rel="stylesheet" href="https://etech-symantec.github.io/style.css" />
-    
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌠%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="https://etech-symantec.github.io/style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     
+    <title>ProxySG XML Editor</title>
+    <meta charset="UTF-8">
+    
     <style>
-        /* 🚨 1. 기본 여백 완벽 제거 (상단/좌측 회색 틈새 없애기) */
-        body { margin: 0 !important; padding: 0 !important; background-color: #f0f2f5; font-size: 0.7rem; user-select: none; }
-    
-        /* 🚨 2. 상단 메뉴 겹침 해결 (Bootstrap의 크기/여백 계산 방식 무효화) */
-        header, header * { box-sizing: content-box !important; }
-        header h1, header h2, header h3, .title { margin-top: 15px !important; }
-    
-        /* 🚨 3. 하단 컨텐츠 우측 쏠림 해결 (container-fluid의 너비 100% 강제 해제) */
-        .container-fluid {
-            width: auto !important; /* 핵심: 오른쪽으로 밀려나는 현상 방지 */
-            margin: 20px 30px !important; 
-            background: #fff; 
-            border-radius: 14px; 
-            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-            padding: 16px 32px;
-        }
+        .container {
+            background:#fff; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,0.08);
+            margin:30px; padding:4px 32px;
+          }
     
         /* 아래부터는 기존 코드 유지 */
         .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
@@ -97,7 +83,7 @@
 </script>
 <script src="https://etech-symantec.github.io/header.js"></script>
 
-<div class="container-fluid">
+<div class="container">
     <div class="d-flex justify-content-between align-items-center mb-2">
         <div class="d-flex align-items-center gap-2">
             <h3>🛡️ VPM Editor</h3>

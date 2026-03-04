@@ -15,35 +15,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     
     <style>
-        /* 🚨 3. body 여백을 8px로 복구하고, 이전에 문제를 일으켰던 header {...} 코드는 완전히 제외했습니다. */
-        body { margin: 8px; background-color: #f0f2f5; font-size: 0.7rem; user-select: none; }
-
-        .section {
-            background: white;
-            margin: 20px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .section-header {
-            background: #1e3a5f;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 8px 8px 0 0;
-            font-weight: bold;
-        }
-
-        main {
-            display: flex;
-            gap: 16px;
-            padding: 0px 16px 16px;
-        }
-        
-        h3 { font-size: 1.1rem; margin-bottom: 0; color: #343a40; }
+        /* 🚨 1. 기본 여백 완벽 제거 (상단/좌측 회색 틈새 없애기) */
+        body { margin: 0 !important; padding: 0 !important; background-color: #f0f2f5; font-size: 0.7rem; user-select: none; }
+    
+        /* 🚨 2. 상단 메뉴 겹침 해결 (Bootstrap의 크기/여백 계산 방식 무효화) */
+        header, header * { box-sizing: content-box !important; }
+        header h1, header h2, header h3, .title { margin-top: 15px !important; }
+    
+        /* 🚨 3. 하단 컨텐츠 우측 쏠림 해결 (container-fluid의 너비 100% 강제 해제) */
         .container-fluid {
-            background:#fff; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,0.08);
-            margin:30px; padding:4px 32px;
+            width: auto !important; /* 핵심: 오른쪽으로 밀려나는 현상 방지 */
+            margin: 20px 30px !important; 
+            background: #fff; 
+            border-radius: 14px; 
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            padding: 16px 32px;
         }
+    
+        /* 아래부터는 기존 코드 유지 */
+        .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+        .section-header { background: #1e3a5f; color: white; padding: 6px 12px; border-radius: 8px 8px 0 0; font-weight: bold; }
+        main { display: flex; gap: 16px; padding: 0px 16px 16px; }
+        h3 { font-size: 1.1rem; margin-bottom: 0; color: #343a40; }
         
         /* 탭 스타일 */
         .custom-tabs { display: flex; flex-wrap: wrap; padding-left: 0; margin-bottom: 0; list-style: none; border-bottom: 1px solid #dee2e6; }

@@ -7,59 +7,218 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="https://etech-symantec.github.io/xml/bootstrap.css">
     <title>ProxySG XML Editor</title>
     <meta charset="UTF-8">
     
     <style>
+        /* ========================================= */
+        /* 🎨 자체 구현 Bootstrap 대체 CSS 시작      */
+        /* ========================================= */
+        
+        /* Reset & Basics */
+        *, *::before, *::after { box-sizing: border-box; }
+        
+        /* Flexbox & Layout */
+        .d-flex { display: flex !important; }
+        .d-inline-block { display: inline-block !important; }
+        .d-block { display: block !important; }
+        .flex-wrap { flex-wrap: wrap !important; }
+        .flex-grow-1 { flex-grow: 1 !important; }
+        .justify-content-between { justify-content: space-between !important; }
+        .justify-content-center { justify-content: center !important; }
+        .align-items-center { align-items: center !important; }
+        .align-items-start { align-items: flex-start !important; }
+        .align-items-end { align-items: flex-end !important; }
+        .gap-1 { gap: 0.25rem !important; }
+        .gap-2 { gap: 0.5rem !important; }
+        .gap-3 { gap: 1rem !important; }
+        .w-100 { width: 100% !important; }
+        .w-auto { width: auto !important; }
+        
+        /* Margins & Paddings */
+        .m-0 { margin: 0 !important; }
+        .mb-0 { margin-bottom: 0 !important; }
+        .mb-1 { margin-bottom: 0.25rem !important; }
+        .mb-2 { margin-bottom: 0.5rem !important; }
+        .mb-3 { margin-bottom: 1rem !important; }
+        .mt-2 { margin-top: 0.5rem !important; }
+        .mt-5 { margin-top: 3rem !important; }
+        .ms-auto { margin-left: auto !important; }
+        .me-1 { margin-right: 0.25rem !important; }
+        .me-2 { margin-right: 0.5rem !important; }
+        .me-3 { margin-right: 1rem !important; }
+        .mx-1 { margin-left: 0.25rem !important; margin-right: 0.25rem !important; }
+        .p-1 { padding: 0.25rem !important; }
+        .p-2 { padding: 0.5rem !important; }
+        .p-3 { padding: 1rem !important; }
+        .px-1 { padding-left: 0.25rem !important; padding-right: 0.25rem !important; }
+        .py-1 { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+        .py-2 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+        .py-3 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+        .py-5 { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+        .pb-2 { padding-bottom: 0.5rem !important; }
+        .ps-1 { padding-left: 0.25rem !important; }
+        
+        /* Typography */
+        .fw-bold { font-weight: 700 !important; }
+        .text-muted { color: #6c757d !important; }
+        .text-white { color: #fff !important; }
+        .text-dark { color: #212529 !important; }
+        .text-primary { color: #0d6efd !important; }
+        .text-danger { color: #dc3545 !important; }
+        .text-center { text-align: center !important; }
+        .small { font-size: 0.875em !important; }
+        .fs-6 { font-size: 1rem !important; }
+        .text-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .text-nowrap { white-space: nowrap !important; }
+        
+        /* Colors, Borders & Backgrounds */
+        .bg-light { background-color: #f8f9fa !important; }
+        .bg-white { background-color: #fff !important; }
+        .bg-primary { background-color: #0d6efd !important; color: white !important; }
+        .bg-success { background-color: #198754 !important; color: white !important; }
+        .bg-warning { background-color: #ffc107 !important; color: #212529 !important; }
+        .bg-secondary { background-color: #6c757d !important; color: white !important; }
+        .bg-info { background-color: #0dcaf0 !important; color: #000 !important;}
+        .rounded { border-radius: 0.375rem !important; }
+        .rounded-pill { border-radius: 50rem !important; }
+        .border { border: 1px solid #dee2e6 !important; }
+        .border-top { border-top: 1px solid #dee2e6 !important; }
+        .border-bottom { border-bottom: 1px solid #dee2e6 !important; }
+        .border-0 { border: 0 !important; }
+        .border-bottom-0 { border-bottom: 0 !important; }
+        .vr { display: inline-block; align-self: stretch; width: 1px; min-height: 1em; background-color: currentColor; opacity: 0.25; }
+        
+        /* Buttons */
+        .btn { display: inline-block; font-weight: 400; line-height: 1.5; text-align: center; text-decoration: none; vertical-align: middle; cursor: pointer; user-select: none; background-color: transparent; border: 1px solid transparent; padding: 0.375rem 0.75rem; font-size: 1rem; border-radius: 0.375rem; transition: all 0.15s; }
+        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; border-radius: 0.25rem; }
+        .btn-primary { color: #fff; background-color: #0d6efd; border-color: #0d6efd; }
+        .btn-primary:hover { background-color: #0b5ed7; border-color: #0a58ca; }
+        .btn-success { color: #fff; background-color: #198754; border-color: #198754; }
+        .btn-success:hover { background-color: #157347; border-color: #146c43; }
+        .btn-info { color: #000; background-color: #0dcaf0; border-color: #0dcaf0; }
+        .btn-info:hover { background-color: #31d2f2; border-color: #25cff2; }
+        .btn-danger { color: #fff; background-color: #dc3545; border-color: #dc3545; }
+        .btn-danger:hover { background-color: #bb2d3b; border-color: #b02a37; }
+        .btn-secondary { color: #fff; background-color: #6c757d; border-color: #6c757d; }
+        .btn-secondary:hover { background-color: #5c636a; border-color: #565e64; }
+        .btn-outline-primary { color: #0d6efd; border-color: #0d6efd; }
+        .btn-outline-primary:hover { color: #fff; background-color: #0d6efd; }
+        .btn-outline-success { color: #198754; border-color: #198754; }
+        .btn-outline-success:hover { color: #fff; background-color: #198754; }
+        .btn-outline-danger { color: #dc3545; border-color: #dc3545; }
+        .btn-outline-danger:hover { color: #fff; background-color: #dc3545; }
+        .btn-close { box-sizing: content-box; width: 1em; height: 1em; padding: 0.25em; color: #000; background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat; border: 0; border-radius: 0.375rem; opacity: .5; cursor: pointer; }
+        .btn-close:hover { opacity: .75; text-decoration: none; }
+        
+        /* Forms */
+        .form-control { display: block; width: 100%; padding: 0.375rem 0.75rem; font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529; background-color: #fff; border: 1px solid #ced4da; border-radius: 0.375rem; outline: none; transition: border-color .15s, box-shadow .15s; }
+        .form-control:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); }
+        .form-select { display: block; width: 100%; padding: 0.375rem 2.25rem 0.375rem 0.75rem; font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529; background-color: #fff; border: 1px solid #ced4da; border-radius: 0.375rem; appearance: none; outline: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 16px 12px; }
+        .form-select:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); }
+        
+        /* Badges */
+        .badge { display: inline-block; padding: 0.35em 0.65em; font-size: 0.75em; font-weight: 700; line-height: 1; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: 0.375rem; }
+        
+        /* Navs & Tabs Base */
+        .nav { display: flex; flex-wrap: wrap; padding-left: 0; margin-bottom: 0; list-style: none; }
+        .tab-content > .tab-pane { display: none; }
+        .tab-content > .active { display: block; }
+        .fade { opacity: 0; transition: opacity 0.15s linear; }
+        .fade.show { opacity: 1; }
+        
+        /* Tables */
+        .table { width: 100%; margin-bottom: 1rem; color: #212529; vertical-align: top; border-color: #dee2e6; border-collapse: collapse; }
+        .table>tbody>tr>td, .table>tbody>tr>th, .table>thead>tr>td, .table>thead>tr>th { padding: 0.5rem; border-bottom: 1px solid #dee2e6; }
+        .table-bordered>:not(caption)>* { border-width: 1px 0; }
+        .table-bordered>:not(caption)>*>* { border-width: 0 1px; border-color: #dee2e6; }
+        .table-hover>tbody>tr:hover>* { color: #212529; background-color: rgba(0,0,0,.075); }
+        .table-sm>tbody>tr>td, .table-sm>tbody>tr>th { padding: 0.25rem; }
+        .align-middle { vertical-align: middle !important; }
+        .table-light { color: #000; background-color: #f8f9fa; }
+        .table-dark { color: #fff; background-color: #212529; }
+        .sticky-top { position: sticky; top: 0; z-index: 1020; }
+        
+        /* Pagination */
+        .pagination { display: flex; padding-left: 0; list-style: none; margin-bottom: 0; }
+        .page-item:not(:first-child) .page-link { margin-left: -1px; }
+        .page-item.active .page-link { z-index: 3; color: #fff; background-color: #0d6efd; border-color: #0d6efd; }
+        .page-item.disabled .page-link { color: #6c757d; pointer-events: none; background-color: #fff; border-color: #dee2e6; }
+        .page-link { position: relative; display: block; color: #0d6efd; text-decoration: none; background-color: #fff; border: 1px solid #dee2e6; padding: 0.375rem 0.75rem; transition: all 0.15s; }
+        .page-link:hover { z-index: 2; color: #0a58ca; background-color: #e9ecef; border-color: #dee2e6; }
+        .pagination-sm .page-link { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+        
+        /* List Group */
+        .list-group { display: flex; flex-direction: column; padding-left: 0; margin-bottom: 0; border-radius: 0.375rem; }
+        .list-group-flush > .list-group-item { border-width: 0 0 1px; border-radius: 0; border-color: #dee2e6;}
+        .list-group-flush > .list-group-item:last-child { border-bottom-width: 0; }
+        .list-group-item { position: relative; display: block; padding: 0.5rem 1rem; color: #212529; text-decoration: none; background-color: #fff; border: 1px solid rgba(0,0,0,.125); }
+        .list-group-item-action { width: 100%; color: #495057; text-align: inherit; }
+        .list-group-item-action:hover, .list-group-item-action:focus { z-index: 1; color: #212529; text-decoration: none; background-color: #f8f9fa; }
+        .list-group-item.active { z-index: 2; color: #fff !important; background-color: #0d6efd !important; border-color: #0d6efd !important; }
+        
+        /* Card */
+        .card { position: relative; display: flex; flex-direction: column; min-width: 0; word-wrap: break-word; background-color: #fff; background-clip: border-box; border: 1px solid rgba(0,0,0,.125); border-radius: 0.375rem; }
+        .card-body { flex: 1 1 auto; padding: 1rem; }
+        
+        /* Modals */
+        .modal { position: fixed; top: 0; left: 0; z-index: 1055; display: none; width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto; outline: 0; }
+        .modal-dialog { position: relative; width: auto; margin: 1.75rem auto; max-width: 500px; pointer-events: none; }
+        .modal.fade .modal-dialog { transition: transform 0.3s ease-out; transform: translateY(-50px); }
+        .modal.show .modal-dialog { transform: none; }
+        .modal-lg { max-width: 800px; }
+        .modal-content { position: relative; display: flex; flex-direction: column; width: 100%; pointer-events: auto; background-color: #fff; background-clip: padding-box; border: 1px solid rgba(0,0,0,.2); border-radius: 0.5rem; outline: 0; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15); }
+        .modal-header { display: flex; flex-shrink: 0; align-items: center; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #dee2e6; border-top-left-radius: calc(0.5rem - 1px); border-top-right-radius: calc(0.5rem - 1px); }
+        .modal-title { margin-bottom: 0; line-height: 1.5; font-weight: 500; }
+        .modal-body { position: relative; flex: 1 1 auto; padding: 1rem; }
+        .modal-footer { display: flex; flex-wrap: wrap; flex-shrink: 0; align-items: center; justify-content: flex-end; padding: 0.75rem; border-top: 1px solid #dee2e6; border-bottom-right-radius: calc(0.5rem - 1px); border-bottom-left-radius: calc(0.5rem - 1px); }
+        .modal-backdrop { position: fixed; top: 0; left: 0; z-index: 1050; width: 100vw; height: 100vh; background-color: #000; }
+        .modal-backdrop.fade { opacity: 0; transition: opacity 0.15s linear; }
+        .modal-backdrop.show { opacity: 0.5; }
 
+        /* ========================================= */
+        /* 🔧 기존 사용자 정의 스타일 유지 영역      */
+        /* ========================================= */
         .container {
             background:#fff; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,0.08);
-            margin:30px; padding:4px 32px;
-          }
-    
-        /* 아래부터는 기존 코드 유지 */
+            margin:30px; padding:4px 32px; width: auto !important;
+        }
         .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
         .section-header { background: #1e3a5f; color: white; padding: 6px 12px; border-radius: 8px 8px 0 0; font-weight: bold; }
         main { display: flex; gap: 16px; padding: 0px 16px 16px; }
         h3 { font-size: 1.1rem; margin-bottom: 0; color: #343a40; }
         
-        /* 탭 스타일 */
         .custom-tabs { display: flex; flex-wrap: wrap; padding-left: 0; margin-bottom: 0; list-style: none; border-bottom: 1px solid #dee2e6; }
         .custom-tabs .nav-item { margin-bottom: -1px; }
         .custom-tabs .nav-link { 
             border: 1px solid #dee2e6; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; 
             background-color: #e9ecef; color: #6c757d; padding: 6px 12px; font-size: 0.75rem; margin-right: 4px; cursor: pointer; transition: all 0.2s;
+            display: block; text-decoration: none;
         }
         .custom-tabs .nav-link:hover { background-color: #dee2e6; color: #495057; }
         .custom-tabs .nav-link.active { 
             color: #0d6efd; background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; border-top: 3px solid #0d6efd; font-weight: bold; z-index: 2; 
         }
 
-        /* 객체 필터 탭 */
-        .filter-tabs .nav-link { border-radius: 20px; padding: 2px 10px; font-size: 0.7rem; color: #495057; background-color: white; border: 1px solid #dee2e6; margin-right: 4px; cursor: pointer; }
+        .filter-tabs .nav-link { border-radius: 20px; padding: 2px 10px; font-size: 0.7rem; color: #495057; background-color: white; border: 1px solid #dee2e6; margin-right: 4px; cursor: pointer; display: block; text-decoration: none;}
         .filter-tabs .nav-link.active { background-color: #495057; color: white; border-color: #495057; }
 
-        /* 컨테이너 */
         .content-container { height: 650px; border: 1px solid #dee2e6; border-top: none; overflow: hidden; display: flex; flex-direction: column; background-color: #fff; }
         .table-wrapper { overflow: auto; flex: 1; }
         .table { font-size: 0.7rem; margin-bottom: 0; }
         .table th { background-color: #343a40; color: white; position: sticky; top: 0; z-index: 10; white-space: nowrap; padding: 4px 6px; }
         .table td { padding: 3px 6px; vertical-align: middle; border-right: 1px solid #dee2e6; height: 26px; }
 
-        /* 비활성화 스타일 (회색 배경, 이텔릭) */
         .disabled-row, .disabled-row > td { background-color: #f1f3f5 !important; color: #adb5bd !important; font-style: italic; }
         .table-hover tbody tr.disabled-row:hover > * { background-color: #e9ecef !important; }
 
-        /* Combined Object Layout */
         .combined-layout { display: flex; height: 100%; }
         .combined-list-area { width: 30%; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; background-color: #f8f9fa; }
         .combined-list-scroll { flex: 1; overflow-y: auto; }
         .combined-detail { width: 70%; padding: 10px; overflow-y: auto; background-color: #fff; }
         
-        /* 기타 UI */
         .list-group-item { cursor: pointer; font-size: 0.75rem; padding: 6px 10px; border-radius: 0 !important; }
-        .list-group-item.active { background-color: #e8f0fe; color: #0d6efd; border-color: #dee2e6; font-weight: bold; border-left: 3px solid #0d6efd; }
+        .list-group-item.active { background-color: #e8f0fe !important; color: #0d6efd !important; border-color: #dee2e6 !important; font-weight: bold; border-left: 3px solid #0d6efd !important; }
         .member-card { border: 1px solid #dee2e6; border-radius: 4px; padding: 4px 8px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; background-color: white; font-size: 0.75rem; }
         .toolbar { background-color: #f8f9fa; border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6; padding: 6px 10px; }
         .badge-type { font-size: 0.7em; min-width: 45px; display: inline-block; text-align: center; padding: 2px 4px; }
@@ -68,7 +227,6 @@
         .form-control, .form-select, .btn { font-size: 0.7rem; padding: 3px 8px; }
         .pagination { margin-bottom: 0; }
         
-        /* 우클릭 메뉴 */
         .context-menu { display: none; position: absolute; z-index: 2000; background-color: white; border: 1px solid #ccc; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); border-radius: 3px; min-width: 140px; font-size: 0.75rem; }
         .context-menu-item { padding: 6px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
         .context-menu-item:hover { background-color: #f1f3f5; color: #0d6efd; }
@@ -76,7 +234,6 @@
 </head>
 <body>
 
-<!-- 공통 헤더 + 제목 + 버전 -->
 <script>
     window.pageTitle = "XML 편집기";
     window.pageVersion = "ver.2026.3.5.01";
@@ -223,6 +380,70 @@
 <div class="modal fade" id="memberSelectModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header py-2"><h5 class="modal-title fs-6">멤버 추가</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="d-flex gap-2 mb-2"><input type="text" id="memberSearchInput" class="form-control" placeholder="검색 (Enter)" onkeypress="if(event.key==='Enter') searchMemberCandidates()"><button class="btn btn-secondary" onclick="searchMemberCandidates()">검색</button></div><div style="height:350px;overflow-y:auto;border:1px solid #dee2e6"><table class="table table-hover table-sm"><tbody id="memberCandidateBody"><tr><td class="text-center py-3">검색어를 입력하세요.</td></tr></tbody></table></div></div></div></div></div>
 
 <script>
+    // ==========================================================
+    // ⚙️ 자체 구현 Bootstrap JavaScript 로직 (모달 & 탭)
+    // ==========================================================
+    const bootstrap = {
+        Modal: function(element) {
+            this.element = element;
+            this.show = function() {
+                element.style.display = 'block';
+                setTimeout(() => element.classList.add('show'), 10);
+                let backdrop = document.querySelector('.modal-backdrop');
+                if(!backdrop) {
+                    backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    document.body.appendChild(backdrop);
+                }
+            };
+            this.hide = function() {
+                element.classList.remove('show');
+                setTimeout(() => element.style.display = 'none', 300);
+                let backdrop = document.querySelector('.modal-backdrop');
+                if(backdrop) {
+                    backdrop.classList.remove('show');
+                    setTimeout(() => backdrop.remove(), 300);
+                }
+            };
+            element._bsModal = this;
+        }
+    };
+    bootstrap.Modal.getInstance = function(element) {
+        return element._bsModal || new bootstrap.Modal(element);
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // 모달 닫기 버튼 이벤트 연결
+        document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const modalEl = this.closest('.modal');
+                if(modalEl) bootstrap.Modal.getInstance(modalEl).hide();
+            });
+        });
+
+        // 탭 전환 이벤트 연결
+        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabGroup = this.closest('ul');
+                tabGroup.querySelectorAll('.nav-link').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                const targetId = this.getAttribute('data-bs-target');
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('show', 'active');
+                });
+                const targetPane = document.querySelector(targetId);
+                if(targetPane) {
+                    targetPane.classList.add('show', 'active');
+                }
+            });
+        });
+    });
+
+    // ==========================================================
+    // 기존 시스템 로직
+    // ==========================================================
     let xmlDoc = null;
     let basicObjects = [], combinedObjects = [], allObjNames = [];
     let currentBasicPage = 1, currentCombListPage = 1, itemsPerPage = 50;
@@ -247,7 +468,7 @@
         reader.readAsText(file);
     });
 
-    // [업데이트] MC API 호출 (Auth 포함)
+    // MC API 호출 (Auth 포함)
     async function fetchPolicyFromMC() {
         const ip = document.getElementById('mcIp').value;
         const id = document.getElementById('policyId').value;
@@ -257,13 +478,10 @@
         if(!pass) { alert("비밀번호를 입력하세요."); return; }
 
         const url = `https://${ip}:8082/api/policies/${id}/content`;
-        
-        // Basic Auth 헤더 (Base64 인코딩)
         const authHeader = "Basic " + btoa(user + ":" + pass);
 
         try {
             alert(`요청 중...\nURL: ${url}\n(인증서 확인 필수: https://${ip}:8082 새 탭에서 접속)`);
-            
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
@@ -276,7 +494,6 @@
             if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
             
             const json = await response.json();
-            
             if (json.content && json.content.xml) {
                 loadXMLFromString(json.content.xml);
                 alert("API 로드 성공!");

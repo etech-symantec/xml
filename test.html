@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
     
+    <link rel="stylesheet" href="https://etech-symantec.github.io/xml/bootstrap-iso.css">
     <title>ProxySG XML Editor</title>
     <meta charset="UTF-8">
     
@@ -460,6 +461,5 @@
     function deleteCurrentLayer() { if(!confirm("삭제?")) return; const l = xmlDoc.getElementsByTagName("layer")[currentLayerIndex]; l.parentNode.removeChild(l); currentLayerIndex = Math.max(0, currentLayerIndex - 1); initLayerTabs(); }
     function downloadXML() { if (!xmlDoc) return alert("데이터 없음"); const s = new XMLSerializer(); const b = new Blob([s.serializeToString(xmlDoc)], {type: "text/xml"}); const l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = "vpm_mc_final.xml"; l.click(); }
 </script>
-<link rel="stylesheet" href="https://etech-symantec.github.io/xml/bootstrap-iso.css">
 </body>
 </html>

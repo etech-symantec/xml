@@ -1,2 +1,57 @@
-구상 중..
-먼저 만드는 분에게 큰 보상이...
+<vpmapp> (Root: VPM 설정 전체)
+┃
+┣━━ 기본 정보 및 설정
+┃   ┣━━ <vpmxml-info>: XML 버전 정보
+┃   ┗━━ <enforcement-point>: 정책 적용 활성/비활성
+┃
+┣━━ 글로벌 리스트 정의
+┃   ┣━━ <Known-File-Ext> ➔ <File-Ext>: 파일 확장자 정의
+┃   ┗━━ <Known-Recip-Lists> ➔ <Recip-List>: 이메일 수신자 명단
+┃
+┣━━ <conditionObjects> (정책 조건 객체 - 핵심 정의 영역)
+┃   ┣━━ 네트워크/인프라: <ipobject>, <host-port>, <protocol>, <dns-rdns> (in <configObjects>)
+┃   ┣━━ 웹/앱 카테고리:
+┃   ┃   ┣━━ <vpm-cat> ➔ <node>, <child>: URL/카테고리 트리
+┃   ┃   ┣━━ <categorylist4> ➔ <sel>, <i>, <excl>, <sel-p>: 카테고리 선택 리스트
+┃   ┃   ┗━━ <app-url> ➔ <selected-applications>: 애플리케이션 정의
+┃   ┣━━ 요청/응답 상세:
+┃   ┃   ┣━━ <a-url>, <op-url> ➔ <selected-operations> ➔ <item>: URL 상세 동작
+┃   ┃   ┣━━ <user-agent-list> ➔ <user-agent-item>: 브라우저 정보
+┃   ┃   ┣━━ <hdr-obj>, <hdr-act>, <hdr-supp-list> ➔ <i>: HTTP 헤더 조작/조건
+┃   ┃   ┗━━ <appar-data-type> ➔ <adt-info>: 데이터 타입 분석
+┃   ┣━━ 보안 및 제어:
+┃   ┃   ┣━━ <ssl-fwd-prxy>, <ssl-fwd-prxy522>, <ssl-fwd-prxy-on-excep>: SSL 복호화/프록시 설정
+┃   ┃   ┣━━ <svr-cert>, <svr-cert-valdn>: 서버 인증서 검증
+┃   ┃   ┣━━ <file-download> ➔ <file-type-info>: 파일 다운로드 제어
+┃   ┃   ┗━━ <http-req-max-body-size>: 요청 크기 제한
+┃   ┣━━ 인증 및 관리: <adm-auth-obj>, <group>, <user-agent-list>, <policy-id>
+┃   ┣━━ 기타 조건: <time>(시간대), <trace-obj>(추적), <email>, <htm-ntfy>(알림)
+┃   ┗━━ 복합 객체: <comb-obj> ➔ <c-l-1>, <c-l-2>, <ai>: 여러 조건을 하나로 결합
+┃
+┣━━ <configObjects>: 환경 설정 객체 (예: <dns-rdns>)
+┃
+┗━━ <layers> (정책 실행 계층)
+┣━━ <layer> (개별 정책 테이블)
+┃   ┣━━ <name>: 레이어 이름
+┃   ┣━━ <numRows>: 포함된 규칙 수
+┃   ┗━━ <rowItem> (개별 규칙)
+┃       ┗━━ <colItem>, <colItemV2>: 규칙의 각 열(Source, Dest, Action 등)
+┗━━ <raw-cpl>: 직접 작성한 CPL(Content Policy Language) 코드
+
+#구분,XML 태그 (항목),상세 역할 설명
+시스템/버전,"<vpmxml-info>, <enforcement-point>",XML의 생성 정보와 이 정책이 현재 장비에 적용 중인지를 나타냄
+파일/이메일,"<Known-File-Ext>, <Known-Recip-Lists>",자주 사용하는 파일 확장자 그룹과 경고 메시지를 보낼 이메일 주소 그룹 정의
+URL/카테고리,"<vpm-cat>, <categorylist4>, <a-url>, <op-url>","접속 허용/차단 대상이 되는 URL 주소, 카테고리, 그리고 그 안의 세부 동작 정의"
+애플리케이션,"<app-url>, <selected-applications>","Facebook, YouTube 등 특정 웹 앱 기반의 정밀한 제어 조건"
+네트워크 조건,"<ipobject>, <host-port>, <protocol>, <time>","IP 주소, 포트 번호, 사용 프로토콜, 그리고 정책이 적용될 시간 범위"
+HTTP 헤더/동작,"<hdr-obj>, <hdr-act>, <hdr-supp-list>, <user-agent-list>","HTTP 헤더 값(Referer 등)을 검사하거나 수정하고, 브라우저 종류에 따른 필터링"
+SSL/인증서,"<ssl-fwd-prxy>, <svr-cert-valdn>",암호화된 트래픽(HTTPS)을 복호화하여 검사할지 여부와 서버 인증서의 유효성 검사
+파일 제어,"<file-download>, <appar-data-type>",실제 다운로드되는 파일의 내용(Magic Number 등)을 분석하여 차단 여부 결정
+복합 객체,"<comb-obj>, <c-l-1>, <c-l-2>","""특정 시간"" + ""특정 그룹"" + ""특정 사이트"" 처럼 여러 조건을 AND/OR로 조합"
+정책 실행,"<layer>, <rowItem>, <colItem>, <colItemV2>",최종 실행 단계. 정의된 모든 객체를 조합하여 '누가 어디를 갈 때 어떻게 할지' 결정
+사용자 정의,<raw-cpl>,VPM UI로 표현하기 어려운 복잡한 정책을 CPL 언어로 직접 코딩한 영역
+
+#관계성 요약
+정의부 (conditionObjects 등): 모든 재료(대상, 시간, 앱, 확장자 등)를 태그별로 잘게 쪼개어 정의합니다. 특히 <comb-obj>는 다른 작은 태그들을 묶어서 더 큰 조건을 만듭니다.
+참조부 (layer): 정의된 재료들을 불러와서 실제 규칙(rowItem)을 만듭니다. 이때 <colItem> 혹은 <colItemV2> 태그가 정의된 객체들의 ID나 이름을 참조하여 서로를 연결합니다.
+최종 결과: 사용자가 네트워크 접속을 시도하면, <layers>에 있는 규칙들을 위에서부터 아래로 훑으면서 해당되는 <conditionObjects>가 있는지 확인하고 동작(Action)을 결정합니다.

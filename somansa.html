@@ -1,1 +1,675 @@
-ㅅㄷㄴㅅ
+<!DOCTYPE html>
+<html lang="ko">
+<head>    
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌠%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="https://etech-symantec.github.io/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+    
+    <title>ProxySG XML Editor (Somansa Converter)</title>
+    <meta charset="UTF-8">
+    
+    <style>
+        /* ========================================= */
+        /* 🎨 자체 구현 Bootstrap 대체 CSS 시작      */
+        /* ========================================= */
+        *, *::before, *::after { box-sizing: border-box; }
+        
+        .d-flex { display: flex !important; }
+        .d-inline-block { display: inline-block !important; }
+        .d-block { display: block !important; }
+        .flex-column { flex-direction: column !important; }
+        .flex-wrap { flex-wrap: wrap !important; }
+        .flex-grow-1 { flex-grow: 1 !important; }
+        .justify-content-between { justify-content: space-between !important; }
+        .justify-content-center { justify-content: center !important; }
+        .align-items-center { align-items: center !important; }
+        .align-items-start { align-items: flex-start !important; }
+        .align-items-end { align-items: flex-end !important; }
+        .align-items-stretch { align-items: stretch !important; }
+        .gap-1 { gap: 0.25rem !important; }
+        .gap-2 { gap: 0.5rem !important; }
+        .gap-3 { gap: 1rem !important; }
+        .w-100 { width: 100% !important; }
+        .w-50 { width: 50% !important; }
+        .w-auto { width: auto !important; }
+        .h-100 { height: 100% !important; }
+        
+        .m-0 { margin: 0 !important; }
+        .mb-0 { margin-bottom: 0 !important; }
+        .mb-1 { margin-bottom: 0.25rem !important; }
+        .mb-2 { margin-bottom: 0.5rem !important; }
+        .mb-3 { margin-bottom: 1rem !important; }
+        .mt-2 { margin-top: 0.5rem !important; }
+        .mt-3 { margin-top: 1rem !important; }
+        .mt-5 { margin-top: 3rem !important; }
+        .ms-auto { margin-left: auto !important; }
+        .me-1 { margin-right: 0.25rem !important; }
+        .me-2 { margin-right: 0.5rem !important; }
+        .me-3 { margin-right: 1rem !important; }
+        .mx-1 { margin-left: 0.25rem !important; margin-right: 0.25rem !important; }
+        .p-1 { padding: 0.25rem !important; }
+        .p-2 { padding: 0.5rem !important; }
+        .p-3 { padding: 1rem !important; }
+        .px-1 { padding-left: 0.25rem !important; padding-right: 0.25rem !important; }
+        .px-3 { padding-left: 1rem !important; padding-right: 1rem !important; }
+        .py-1 { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+        .py-2 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+        .py-3 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+        .py-5 { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+        .pb-2 { padding-bottom: 0.5rem !important; }
+        .ps-1 { padding-left: 0.25rem !important; }
+        
+        .fw-bold { font-weight: 700 !important; }
+        .text-muted { color: #6c757d !important; }
+        .text-white { color: #fff !important; }
+        .text-dark { color: #212529 !important; }
+        .text-primary { color: #0d6efd !important; }
+        .text-danger { color: #dc3545 !important; }
+        .text-center { text-align: center !important; }
+        .small { font-size: 0.875em !important; }
+        .fs-5 { font-size: 1.25rem !important; }
+        .fs-6 { font-size: 1rem !important; }
+        .text-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .text-nowrap { white-space: nowrap !important; }
+        
+        .bg-light { background-color: #f8f9fa !important; }
+        .bg-white { background-color: #fff !important; }
+        .bg-primary { background-color: #0d6efd !important; color: white !important; }
+        .bg-success { background-color: #198754 !important; color: white !important; }
+        .bg-warning { background-color: #ffc107 !important; color: #212529 !important; }
+        .bg-secondary { background-color: #6c757d !important; color: white !important; }
+        .bg-info { background-color: #0dcaf0 !important; color: #000 !important;}
+        
+        .rounded { border-radius: 0.375rem !important; }
+        .rounded-pill { border-radius: 50rem !important; }
+        .border { border: 1px solid #dee2e6 !important; }
+        .border-top { border-top: 1px solid #dee2e6 !important; }
+        .border-bottom { border-bottom: 1px solid #dee2e6 !important; }
+        .border-0 { border: 0 !important; }
+        .border-bottom-0 { border-bottom: 0 !important; }
+        .vr { display: inline-block; align-self: stretch; width: 1px; min-height: 1em; background-color: currentColor; opacity: 0.25; }
+        
+        /* Buttons */
+        .btn { display: inline-block; font-weight: 400; line-height: 1.5; text-align: center; text-decoration: none; vertical-align: middle; cursor: pointer; user-select: none; background-color: transparent; border: 1px solid transparent; padding: 0.375rem 0.75rem; font-size: 1rem; border-radius: 0.375rem; transition: all 0.15s; }
+        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; border-radius: 0.25rem; }
+        .btn-primary { color: #fff; background-color: #0d6efd; border-color: #0d6efd; }
+        .btn-primary:hover { background-color: #0b5ed7; border-color: #0a58ca; }
+        .btn-success { color: #fff; background-color: #198754; border-color: #198754; }
+        .btn-success:hover { background-color: #157347; border-color: #146c43; }
+        .btn-warning { color: #000; background-color: #ffc107; border-color: #ffc107; }
+        .btn-warning:hover { background-color: #ffca2c; border-color: #ffc720; }
+        .btn-info { color: #000; background-color: #0dcaf0; border-color: #0dcaf0; }
+        .btn-info:hover { background-color: #31d2f2; border-color: #25cff2; }
+        .btn-danger { color: #fff; background-color: #dc3545; border-color: #dc3545; }
+        .btn-danger:hover { background-color: #bb2d3b; border-color: #b02a37; }
+        .btn-secondary { color: #fff; background-color: #6c757d; border-color: #6c757d; }
+        .btn-secondary:hover { background-color: #5c636a; border-color: #565e64; }
+        .btn-outline-primary { color: #0d6efd; border-color: #0d6efd; }
+        .btn-outline-primary:hover { color: #fff; background-color: #0d6efd; }
+        .btn-outline-success { color: #198754; border-color: #198754; }
+        .btn-outline-success:hover { color: #fff; background-color: #198754; }
+        .btn-outline-danger { color: #dc3545; border-color: #dc3545; }
+        .btn-outline-danger:hover { color: #fff; background-color: #dc3545; }
+        .btn-close { box-sizing: content-box; width: 1em; height: 1em; padding: 0.25em; color: #000; background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat; border: 0; border-radius: 0.375rem; opacity: .5; cursor: pointer; }
+        .btn-close:hover { opacity: .75; text-decoration: none; }
+        
+        /* Forms */
+        .form-control { display: block; width: 100%; padding: 0.375rem 0.75rem; font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529; background-color: #fff; border: 1px solid #ced4da; border-radius: 0.375rem; outline: none; transition: border-color .15s, box-shadow .15s; }
+        .form-control:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); }
+        .form-select { display: block; width: 100%; padding: 0.375rem 2.25rem 0.375rem 0.75rem; font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529; background-color: #fff; border: 1px solid #ced4da; border-radius: 0.375rem; appearance: none; outline: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 16px 12px; }
+        .form-select:focus { border-color: #86b7fe; box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); }
+        
+        /* Badges */
+        .badge { display: inline-block; padding: 0.35em 0.65em; font-size: 0.75em; font-weight: 700; line-height: 1; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: 0.375rem; }
+        
+        /* Navs & Tabs Base */
+        .nav { display: flex; flex-wrap: wrap; padding-left: 0; margin-bottom: 0; list-style: none; }
+        .tab-content > .tab-pane { display: none; }
+        .tab-content > .active { display: block; }
+        .fade { opacity: 0; transition: opacity 0.15s linear; }
+        .fade.show { opacity: 1; }
+        
+        /* Tables */
+        .table { width: 100%; margin-bottom: 1rem; color: #212529; vertical-align: top; border-color: #dee2e6; border-collapse: collapse; }
+        .table>tbody>tr>td, .table>tbody>tr>th, .table>thead>tr>td, .table>thead>tr>th { padding: 0.5rem; border-bottom: 1px solid #dee2e6; }
+        .table-bordered>:not(caption)>* { border-width: 1px 0; }
+        .table-bordered>:not(caption)>*>* { border-width: 0 1px; border-color: #dee2e6; }
+        .table-hover>tbody>tr:hover>* { color: #212529; background-color: rgba(0,0,0,.075); }
+        .table-sm>tbody>tr>td, .table-sm>tbody>tr>th { padding: 0.25rem; }
+        .align-middle { vertical-align: middle !important; }
+        .table-light { color: #000; background-color: #f8f9fa; }
+        .table-dark { color: #fff; background-color: #212529; }
+        .sticky-top { position: sticky; top: 0; z-index: 1020; }
+        
+        /* Pagination */
+        .pagination { display: flex; padding-left: 0; list-style: none; margin-bottom: 0; }
+        .page-item:not(:first-child) .page-link { margin-left: -1px; }
+        .page-item.active .page-link { z-index: 3; color: #fff; background-color: #0d6efd; border-color: #0d6efd; }
+        .page-item.disabled .page-link { color: #6c757d; pointer-events: none; background-color: #fff; border-color: #dee2e6; }
+        .page-link { position: relative; display: block; color: #0d6efd; text-decoration: none; background-color: #fff; border: 1px solid #dee2e6; padding: 0.375rem 0.75rem; transition: all 0.15s; }
+        .page-link:hover { z-index: 2; color: #0a58ca; background-color: #e9ecef; border-color: #dee2e6; }
+        .pagination-sm .page-link { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+        
+        /* List Group */
+        .list-group { display: flex; flex-direction: column; padding-left: 0; margin-bottom: 0; border-radius: 0.375rem; }
+        .list-group-flush > .list-group-item { border-width: 0 0 1px; border-radius: 0; border-color: #dee2e6;}
+        .list-group-flush > .list-group-item:last-child { border-bottom-width: 0; }
+        .list-group-item { position: relative; display: block; padding: 0.5rem 1rem; color: #212529; text-decoration: none; background-color: #fff; border: 1px solid rgba(0,0,0,.125); }
+        .list-group-item-action { width: 100%; color: #495057; text-align: inherit; }
+        .list-group-item-action:hover, .list-group-item-action:focus { z-index: 1; color: #212529; text-decoration: none; background-color: #f8f9fa; }
+        .list-group-item.active { z-index: 2; color: #fff !important; background-color: #0d6efd !important; border-color: #0d6efd !important; }
+        
+        /* Card */
+        .card { position: relative; display: flex; flex-direction: column; min-width: 0; word-wrap: break-word; background-color: #fff; background-clip: border-box; border: 1px solid rgba(0,0,0,.125); border-radius: 0.375rem; }
+        .card-body { flex: 1 1 auto; padding: 1rem; }
+        
+        /* Modals */
+        .modal { position: fixed; top: 0; left: 0; z-index: 1055; display: none; width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto; outline: 0; }
+        .modal-dialog { position: relative; width: auto; margin: 1.75rem auto; max-width: 500px; pointer-events: none; }
+        .modal.fade .modal-dialog { transition: transform 0.3s ease-out; transform: translateY(-50px); }
+        .modal.show .modal-dialog { transform: none; }
+        .modal-lg { max-width: 800px; }
+        .modal-content { position: relative; display: flex; flex-direction: column; width: 100%; pointer-events: auto; background-color: #fff; background-clip: padding-box; border: 1px solid rgba(0,0,0,.2); border-radius: 0.5rem; outline: 0; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15); }
+        .modal-header { display: flex; flex-shrink: 0; align-items: center; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #dee2e6; border-top-left-radius: calc(0.5rem - 1px); border-top-right-radius: calc(0.5rem - 1px); }
+        .modal-title { margin-bottom: 0; line-height: 1.5; font-weight: 500; }
+        .modal-body { position: relative; flex: 1 1 auto; padding: 1rem; }
+        .modal-footer { display: flex; flex-wrap: wrap; flex-shrink: 0; align-items: center; justify-content: flex-end; padding: 0.75rem; border-top: 1px solid #dee2e6; border-bottom-right-radius: calc(0.5rem - 1px); border-bottom-left-radius: calc(0.5rem - 1px); }
+        .modal-backdrop { position: fixed; top: 0; left: 0; z-index: 1050; width: 100vw; height: 100vh; background-color: #000; }
+        .modal-backdrop.fade { opacity: 0; transition: opacity 0.15s linear; }
+        .modal-backdrop.show { opacity: 0.5; }
+
+        /* ========================================= */
+        /* 🔧 기존 사용자 정의 스타일 유지 영역      */
+        /* ========================================= */
+        .container {
+            background:#fff; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,0.08);
+            margin:30px; padding:16px 32px; width: auto !important;
+        }
+        .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+        .section-header { background: #1e3a5f; color: white; padding: 6px 12px; border-radius: 8px 8px 0 0; font-weight: bold; }
+        main { display: flex; gap: 16px; padding: 0px 16px 16px; }
+        h3 { font-size: 1.1rem; margin-bottom: 0; color: #343a40; }
+        
+        .custom-tabs { display: flex; flex-wrap: wrap; padding-left: 0; margin-bottom: 0; list-style: none; border-bottom: 1px solid #dee2e6; }
+        .custom-tabs .nav-item { margin-bottom: -1px; }
+        .custom-tabs .nav-link { 
+            border: 1px solid #dee2e6; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; 
+            background-color: #e9ecef; color: #6c757d; padding: 6px 12px; font-size: 0.75rem; margin-right: 4px; cursor: pointer; transition: all 0.2s;
+            display: block; text-decoration: none;
+        }
+        .custom-tabs .nav-link:hover { background-color: #dee2e6; color: #495057; }
+        .custom-tabs .nav-link.active { 
+            color: #0d6efd; background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; border-top: 3px solid #0d6efd; font-weight: bold; z-index: 2; 
+        }
+
+        .filter-tabs .nav-link { border-radius: 20px; padding: 2px 10px; font-size: 0.7rem; color: #495057; background-color: white; border: 1px solid #dee2e6; margin-right: 4px; cursor: pointer; display: block; text-decoration: none;}
+        .filter-tabs .nav-link.active { background-color: #495057; color: white; border-color: #495057; }
+
+        .content-container { height: 650px; border: 1px solid #dee2e6; border-top: none; overflow: hidden; display: flex; flex-direction: column; background-color: #fff; }
+        .table-wrapper { overflow: auto; flex: 1; }
+        .table { font-size: 0.7rem; margin-bottom: 0; }
+        .table th { background-color: #343a40; color: white; position: sticky; top: 0; z-index: 10; white-space: nowrap; padding: 4px 6px; }
+        .table td { padding: 3px 6px; vertical-align: middle; border-right: 1px solid #dee2e6; height: 26px; }
+
+        .disabled-row, .disabled-row > td { background-color: #f1f3f5 !important; color: #adb5bd !important; font-style: italic; }
+        .table-hover tbody tr.disabled-row:hover > * { background-color: #e9ecef !important; }
+
+        .combined-layout { display: flex; height: 100%; }
+        .combined-list-area { width: 30%; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; background-color: #f8f9fa; }
+        .combined-list-scroll { flex: 1; overflow-y: auto; }
+        .combined-detail { width: 70%; padding: 10px; overflow-y: auto; background-color: #fff; }
+        
+        .list-group-item { cursor: pointer; font-size: 0.75rem; padding: 6px 10px; border-radius: 0 !important; }
+        .list-group-item.active { background-color: #e8f0fe !important; color: #0d6efd !important; border-color: #dee2e6 !important; font-weight: bold; border-left: 3px solid #0d6efd !important; }
+        .member-card { border: 1px solid #dee2e6; border-radius: 4px; padding: 4px 8px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; background-color: white; font-size: 0.75rem; }
+        .toolbar { background-color: #f8f9fa; border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6; padding: 6px 10px; }
+        .badge-type { font-size: 0.7em; min-width: 45px; display: inline-block; text-align: center; padding: 2px 4px; }
+        .cpl-editor { width: 100%; height: 100%; background-color: #2b2b2b; color: #f8f8f2; border: none; resize: none; outline: none; padding: 10px; font-family: Consolas, monospace; font-size: 0.8rem; }
+        .inline-input { width: 100%; border: 2px solid #0d6efd; font-size: 0.7rem; padding: 0 4px; }
+        .form-control, .form-select, .btn { font-size: 0.7rem; padding: 3px 8px; }
+        .pagination { margin-bottom: 0; }
+        
+        .context-menu { display: none; position: absolute; z-index: 2000; background-color: white; border: 1px solid #ccc; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); border-radius: 3px; min-width: 140px; font-size: 0.75rem; }
+        .context-menu-item { padding: 6px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .context-menu-item:hover { background-color: #f1f3f5; color: #0d6efd; }
+        
+        /* Converter Layout */
+        .converter-container { display: none; transition: all 0.3s ease; }
+        .converter-textarea { min-height: 250px; font-family: Consolas, monospace; font-size: 0.8rem; resize: vertical; }
+    </style>
+</head>
+<body>
+
+<script>
+    window.pageTitle = "XML 편집기";
+    window.pageVersion = "ver.2026.3.5.02";
+</script>
+<script src="https://etech-symantec.github.io/header.js"></script>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+        <div class="d-flex align-items-center gap-3">
+            <h3>🛡️ VPM Editor</h3>
+            <button class="btn btn-warning fw-bold px-3 py-2" onclick="toggleConverter()">🔄 소만사 객체&정책 ➔ 시만텍 XML</button>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-muted small">File:</span>
+            <input type="file" id="fileInput" class="form-control d-inline-block w-auto" accept=".xml,.txt">
+            <button class="btn btn-success fw-bold px-3" onclick="downloadXML()">💾 XML 저장</button>
+        </div>
+    </div>
+
+    <div id="converterSection" class="converter-container mb-4 p-3 border rounded bg-light">
+        <h5 class="fw-bold mb-3 text-dark fs-5">🔄 소만사 ➔ 시만텍 XML 변환기</h5>
+        <div class="d-flex gap-3 align-items-stretch">
+            
+            <div class="flex-grow-1 d-flex flex-column w-50">
+                <label class="fw-bold text-primary mb-1">📝 소만사 정보 (입력)</label>
+                <textarea id="somansaInput" class="form-control converter-textarea" placeholder="여기에 소만사 객체 또는 정책 데이터를 붙여넣으세요..."></textarea>
+            </div>
+            
+            <div class="d-flex align-items-center justify-content-center">
+                <button class="btn btn-primary fw-bold fs-6 p-2" onclick="convertSomansaToSymantec()" style="border-radius: 50%; width: 50px; height: 50px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">➔</button>
+            </div>
+            
+            <div class="flex-grow-1 d-flex flex-column w-50">
+                <label class="fw-bold text-success mb-1">📄 시만텍 XML (출력)</label>
+                <textarea id="symantecOutput" class="form-control converter-textarea bg-white" readonly placeholder="변환된 시만텍 XML 코드가 여기에 출력됩니다. (우측 하단 모서리를 드래그하여 크기 조절 가능)"></textarea>
+            </div>
+            
+        </div>
+    </div>
+
+    <ul class="custom-tabs" role="tablist">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" data-bs-target="#basicObjects">📦 Basic Objects</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" data-bs-target="#combinedObjects">🧩 Combined Objects</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" data-bs-target="#policy">📜 Policy</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="basicObjects">
+            <div class="toolbar d-flex flex-wrap gap-3 align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold text-muted small">Filter:</span>
+                    <ul class="nav filter-tabs" id="objTypeTabs">
+                        <li class="nav-item"><a class="nav-link active" onclick="setBasicObjFilter('All')">All</a></li>
+                        <li class="nav-item"><a class="nav-link" onclick="setBasicObjFilter('URL List')">URL List</a></li>
+                        <li class="nav-item"><a class="nav-link" onclick="setBasicObjFilter('IP')">IP Address</a></li>
+                    </ul>
+                </div>
+                <div class="vr"></div>
+                <select id="rowsPerPage" class="form-select w-auto" onchange="changeItemsPerPage()">
+                    <option value="50" selected>50개</option>
+                    <option value="100">100개</option>
+                    <option value="200">200개</option>
+                    <option value="500">500개</option>
+                    <option value="1000">1000개</option>
+                </select>
+                <div class="d-flex gap-2 ms-auto">
+                    <input type="text" id="objSearch" class="form-control w-auto" style="min-width: 200px;" placeholder="Name Search (Enter)" onkeypress="if(event.key==='Enter') applyBasicFilter()">
+                    <button class="btn btn-primary" onclick="applyBasicFilter()">🔍</button>
+                    <button class="btn btn-outline-success" onclick="openAddModal()">➕ 추가</button>
+                </div>
+            </div>
+            
+            <div class="content-container">
+                <div class="table-wrapper">
+                    <table class="table table-bordered table-hover align-middle mb-0">
+                        <thead class="table-light sticky-top"><tr><th width="10%">Type</th><th width="25%">Name</th><th width="60%">Value</th><th width="5%">Del</th></tr></thead>
+                        <tbody id="basicObjTableBody"><tr><td colspan="4" class="text-center py-5 text-muted">파일을 업로드하거나 상단 API로 데이터를 불러오세요.</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                <span id="basicTotalCount" class="text-muted fw-bold small">Total: 0</span>
+                <nav><ul class="pagination pagination-sm" id="paginationControls"></ul></nav>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="combinedObjects">
+            <div class="toolbar d-flex justify-content-between align-items-center">
+                <div class="d-flex gap-2">
+                    <input type="text" id="combSearch" class="form-control d-inline-block w-auto" placeholder="그룹 이름 검색" onkeypress="if(event.key==='Enter') applyCombinedFilter()">
+                    <button class="btn btn-primary" onclick="applyCombinedFilter()">🔍 검색</button>
+                </div>
+                <button class="btn btn-outline-primary" onclick="addCombinedGroup()">➕ 새 그룹</button>
+            </div>
+            <div class="content-container">
+                <div class="combined-layout">
+                    <div class="combined-list-area">
+                        <div class="combined-list-scroll"><div class="list-group list-group-flush" id="combinedListGroup"><div class="p-3 text-center text-muted">목록 없음</div></div></div>
+                        <div class="p-2 border-top bg-white"><nav class="d-flex justify-content-center"><ul class="pagination pagination-sm mb-0" id="combListPagination"></ul></nav></div>
+                    </div>
+                    <div class="combined-detail">
+                        <div id="combinedDetailView" style="display:none;">
+                            <div class="d-flex justify-content-between align-items-start mb-2 border-bottom pb-2">
+                                <div><h4 id="selectedCombName" class="mb-0 text-primary fs-6">Name</h4><small class="text-muted">Combined Object</small></div>
+                                <button class="btn btn-danger btn-sm" onclick="deleteCurrentGroup()">🗑 삭제</button>
+                            </div>
+                            <h6 class="fw-bold mb-2 text-dark">📂 포함된 객체 (Members)</h6>
+                            <div id="memberListArea" class="mb-3"></div>
+                            <div class="card bg-light border-0"><div class="card-body p-2 text-center"><button class="btn btn-primary w-100" onclick="openMemberSelectModal()">➕ 멤버 추가</button></div></div>
+                        </div>
+                        <div id="combinedEmptyState" class="text-center text-muted mt-5"><h5>👈 왼쪽에서 그룹을 선택하세요</h5></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="policy">
+            <div class="d-flex align-items-end border-bottom">
+                <ul class="custom-tabs flex-grow-1 border-bottom-0" id="layerTabs">
+                    <li class="nav-item"><span class="text-muted p-2 small d-block">파일 로드 필요</span></li>
+                </ul>
+                <button class="btn btn-sm btn-secondary mb-1 me-1" onclick="addNewLayer()" title="새 레이어">➕ Layer</button>
+            </div>
+            <div class="toolbar d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-secondary me-2" id="layerTypeBadge">Type</span>
+                    <span class="fw-bold text-primary" id="layerInfo">Info</span>
+                </div>
+                <div>
+                    <span class="text-muted small me-3">💡 우클릭 메뉴: 룰 추가 / 삭제 / 비활성</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCurrentLayer()">🗑 Layer 삭제</button>
+                </div>
+            </div>
+            <div class="content-container" id="policyContainer"></div>
+        </div>
+    </div>
+</div>
+
+<div id="policyContextMenu" class="context-menu">
+    <div class="context-menu-item" onclick="insertRuleAt(-1)">🔼 위쪽에 룰 추가</div>
+    <div class="context-menu-item" onclick="insertRuleAt(1)">🔽 아래쪽에 룰 추가</div>
+    <div class="context-menu-item" onclick="toggleDisableRule()">🚫 활성/비활성 토글</div>
+    <div class="context-menu-item text-danger" onclick="deleteTargetRule()">🗑 이 룰 삭제</div>
+</div>
+
+<div class="modal fade" id="addBasicModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header py-2"><h5 class="modal-title fs-6">객체 추가</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><select id="newObjType" class="form-select mb-2"><option value="URL List">URL List</option><option value="IP">IP Address</option></select><input type="text" id="newObjName" class="form-control mb-2" placeholder="이름"><textarea id="newObjValue" class="form-control" rows="4" placeholder="값"></textarea></div><div class="modal-footer py-1"><button class="btn btn-primary w-100" onclick="addBasicObject()">추가</button></div></div></div></div>
+<div class="modal fade" id="memberSelectModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header py-2"><h5 class="modal-title fs-6">멤버 추가</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="d-flex gap-2 mb-2"><input type="text" id="memberSearchInput" class="form-control" placeholder="검색 (Enter)" onkeypress="if(event.key==='Enter') searchMemberCandidates()"><button class="btn btn-secondary" onclick="searchMemberCandidates()">검색</button></div><div style="height:350px;overflow-y:auto;border:1px solid #dee2e6"><table class="table table-hover table-sm"><tbody id="memberCandidateBody"><tr><td class="text-center py-3">검색어를 입력하세요.</td></tr></tbody></table></div></div></div></div></div>
+
+<script>
+    // ==========================================================
+    // ⚙️ 자체 구현 Bootstrap JavaScript 로직 (모달 & 탭)
+    // ==========================================================
+    const bootstrap = {
+        Modal: function(element) {
+            this.element = element;
+            this.show = function() {
+                element.style.display = 'block';
+                setTimeout(() => element.classList.add('show'), 10);
+                let backdrop = document.querySelector('.modal-backdrop');
+                if(!backdrop) {
+                    backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    document.body.appendChild(backdrop);
+                }
+            };
+            this.hide = function() {
+                element.classList.remove('show');
+                setTimeout(() => element.style.display = 'none', 300);
+                let backdrop = document.querySelector('.modal-backdrop');
+                if(backdrop) {
+                    backdrop.classList.remove('show');
+                    setTimeout(() => backdrop.remove(), 300);
+                }
+            };
+            element._bsModal = this;
+        }
+    };
+    bootstrap.Modal.getInstance = function(element) {
+        return element._bsModal || new bootstrap.Modal(element);
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const modalEl = this.closest('.modal');
+                if(modalEl) bootstrap.Modal.getInstance(modalEl).hide();
+            });
+        });
+
+        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabGroup = this.closest('ul');
+                tabGroup.querySelectorAll('.nav-link').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                const targetId = this.getAttribute('data-bs-target');
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('show', 'active');
+                });
+                const targetPane = document.querySelector(targetId);
+                if(targetPane) {
+                    targetPane.classList.add('show', 'active');
+                }
+            });
+        });
+    });
+
+    // ==========================================================
+    // 🔄 소만사 -> 시만텍 변환기 로직 (신규)
+    // ==========================================================
+    function toggleConverter() {
+        const section = document.getElementById("converterSection");
+        if (section.style.display === "none" || section.style.display === "") {
+            section.style.display = "block";
+        } else {
+            section.style.display = "none";
+        }
+    }
+
+    function convertSomansaToSymantec() {
+        const inputData = document.getElementById("somansaInput").value;
+        const outputBox = document.getElementById("symantecOutput");
+        
+        if (!inputData.trim()) {
+            alert("소만사 정보를 먼저 입력해주세요.");
+            return;
+        }
+
+        // 여기에 추후 알려주실 변환 법칙 로직이 들어갑니다.
+        // 임시로 작동 테스트를 위한 메시지를 띄웁니다.
+        outputBox.value = "\n" + 
+                          "<vpm>\n" +
+                          "  <comment>입력받은 소만사 데이터:\n" + inputData + "\n  </comment>\n" +
+                          "</vpm>";
+    }
+
+    // ==========================================================
+    // 기존 에디터 로직 (MC 기능 제거됨)
+    // ==========================================================
+    let xmlDoc = null;
+    let basicObjects = [], combinedObjects = [], allObjNames = [];
+    let currentBasicPage = 1, currentCombListPage = 1, itemsPerPage = 50;
+    let selectedCombIndex = -1, filteredCombinedObjects = [];
+    let currentLayerIndex = 0;
+    let currentBasicObjFilter = "All";
+    let contextMenuTargetRowIndex = -1; 
+    let contextMenuTargetRowElement = null;
+
+    function changeItemsPerPage() {
+        const val = document.getElementById("rowsPerPage").value;
+        itemsPerPage = parseInt(val, 10);
+        currentBasicPage = 1; currentCombListPage = 1;
+        renderBasicTable();
+        if(filteredCombinedObjects.length > 0) renderCombinedList(); 
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) { loadXMLFromString(e.target.result); };
+        reader.readAsText(file);
+    });
+
+    function loadXMLFromString(xmlString) {
+        const parser = new DOMParser();
+        xmlDoc = parser.parseFromString(xmlString, "text/xml");
+        if(xmlDoc.getElementsByTagName("parsererror").length > 0) {
+            alert("XML 파싱 오류: 올바른 XML 형식이 아닙니다.");
+            return;
+        }
+        parseAllObjects();
+        initLayerTabs();
+        renderBasicTable();
+    }
+
+    function parseAllObjects() {
+        basicObjects = []; combinedObjects = []; allObjNames = [];
+        const conds = xmlDoc.getElementsByTagName("conditionObjects")[0]; if (!conds) return;
+        for (let n of conds.getElementsByTagName("node")) { basicObjects.push({type:'URL List', name:n.getAttribute('n'), value:n.getAttribute('u-l'), element:n, attr:'u-l'}); allObjNames.push({name:n.getAttribute('n'), type:'URL List'}); }
+        for (let ip of conds.getElementsByTagName("ipobject")) { basicObjects.push({type:'IP', name:ip.getAttribute('name'), value:ip.getAttribute('value'), element:ip, attr:'value'}); allObjNames.push({name:ip.getAttribute('name'), type:'IP'}); }
+        const combs = conds.getElementsByTagName("comb-obj");
+        for (let i=0; i<combs.length; i++) {
+            let m=[]; for(let c of combs[i].children) if(c.getAttribute('n')) m.push(c.getAttribute('n'));
+            combinedObjects.push({originalIndex:i, name:combs[i].getAttribute('name'), members:m, element:combs[i]}); allObjNames.push({name:combs[i].getAttribute('name'), type:'Combined'});
+        }
+        renderBasicTable(); applyCombinedFilter();
+    }
+
+    function setBasicObjFilter(type) {
+        currentBasicObjFilter = type;
+        document.querySelectorAll('#objTypeTabs .nav-link').forEach(el => {
+            if(el.innerText === type || (type==='All' && el.innerText==='All')) el.classList.add('active');
+            else el.classList.remove('active');
+        });
+        currentBasicPage = 1; renderBasicTable();
+    }
+    function applyBasicFilter(){ currentBasicPage=1; renderBasicTable(); }
+    function renderBasicTable(){ 
+        const s=document.getElementById('objSearch').value.toLowerCase().trim();
+        const tb=document.getElementById("basicObjTableBody");
+        let f=basicObjects.filter(o=>(currentBasicObjFilter==="All"||o.type===currentBasicObjFilter)&&o.name.toLowerCase().includes(s));
+        tb.innerHTML=""; document.getElementById("basicTotalCount").innerText=`Total: ${f.length}`;
+        if(f.length===0){tb.innerHTML=`<tr><td colspan="4" class="text-center py-5">없음</td></tr>`; return;}
+        f.slice((currentBasicPage-1)*itemsPerPage, currentBasicPage*itemsPerPage).forEach(o=>{
+            let b=o.type==='URL List'?'bg-primary':(o.type==='IP'?'bg-success':'bg-warning text-dark');
+            tb.innerHTML+=`<tr><td class="text-center"><span class="badge ${b} badge-type">${o.type}</span></td><td class="fw-bold text-truncate" style="max-width:200px">${o.name}</td><td><textarea class="form-control" rows="1" onchange="updateBasicVal(this,'${o.name}')">${o.value}</textarea></td><td class="text-center"><button class="btn btn-outline-danger btn-sm">🗑</button></td></tr>`;
+        });
+        renderPagination("paginationControls", f.length, currentBasicPage, p=>{currentBasicPage=p;renderBasicTable();});
+    }
+
+    function updateBasicVal(el,n){const o=basicObjects.find(x=>x.name===n); if(o){o.value=el.value; o.element.setAttribute(o.attr, el.value);}}
+    function applyCombinedFilter(){ const s=document.getElementById('combSearch').value.toLowerCase().trim(); filteredCombinedObjects=combinedObjects.filter(o=>o.name.toLowerCase().includes(s)); currentCombListPage=1; renderCombinedList(); }
+    function renderCombinedList(){
+        const l=document.getElementById("combinedListGroup"); l.innerHTML=""; 
+        if(filteredCombinedObjects.length===0){l.innerHTML=`<div class="p-3 text-center">없음</div>`; document.getElementById("combListPagination").innerHTML=""; return;}
+        const start=(currentCombListPage-1)*itemsPerPage;
+        filteredCombinedObjects.slice(start, start+itemsPerPage).forEach((o,i)=>{
+            const gIdx=start+i;
+            l.innerHTML+=`<div class="list-group-item list-group-item-action ${gIdx===selectedCombIndex?'active':''}" onclick="selectCombined(${gIdx})"><div class="d-flex justify-content-between"><span>${o.name}</span><span class="badge bg-secondary rounded-pill">${o.members.length}</span></div></div>`;
+        });
+        renderPagination("combListPagination", filteredCombinedObjects.length, currentCombListPage, p=>{currentCombListPage=p;renderCombinedList();});
+    }
+    function selectCombined(idx){
+        selectedCombIndex=idx; renderCombinedList();
+        const o=filteredCombinedObjects[idx]; document.getElementById("combinedEmptyState").style.display="none"; document.getElementById("combinedDetailView").style.display="block"; document.getElementById("selectedCombName").innerText=o.name;
+        const a=document.getElementById("memberListArea"); a.innerHTML="";
+        if(o.members.length===0) a.innerHTML=`<div class="text-muted text-center p-3 border bg-light">멤버 없음</div>`;
+        else o.members.forEach(m=>{
+            const f=allObjNames.find(x=>x.name===m), t=f?f.type:"Unknown", b=t==='URL List'?'bg-primary':(t==='IP'?'bg-success':'bg-warning text-dark');
+            a.innerHTML+=`<div class="member-card"><div class="d-flex align-items-center"><span class="badge ${b} me-2" style="width:50px;">${t}</span><span class="fw-bold">${m}</span></div><button class="btn btn-sm btn-outline-danger" onclick="removeMember('${m}')">✕</button></div>`;
+        });
+    }
+    function removeMember(m){ const o=filteredCombinedObjects[selectedCombIndex]; o.members=o.members.filter(x=>x!==m); for(let c of o.element.children){if(c.getAttribute('n')===m){o.element.removeChild(c);break;}} selectCombined(selectedCombIndex); }
+    function openAddModal(){new bootstrap.Modal(document.getElementById('addBasicModal')).show();}
+    function addBasicObject(){ const t=document.getElementById("newObjType").value,n=document.getElementById("newObjName").value,v=document.getElementById("newObjValue").value; if(!n)return; const c=xmlDoc.getElementsByTagName("conditionObjects")[0]; let e; if(t==="URL List"){e=xmlDoc.createElement("node");e.setAttribute("n",n);e.setAttribute("u-l",v);e.setAttribute("type","100");}else{e=xmlDoc.createElement("ipobject");e.setAttribute("name",n);e.setAttribute("value",v);} c.appendChild(e); bootstrap.Modal.getInstance(document.getElementById('addBasicModal')).hide(); parseAllObjects(); }
+    function addCombinedGroup(){ const n=prompt("새 그룹 이름:"); if(!n)return; const c=xmlDoc.getElementsByTagName("conditionObjects")[0], e=xmlDoc.createElement("comb-obj"); e.setAttribute("name",n); c.appendChild(e); parseAllObjects(); }
+    function deleteCurrentGroup(){ if(confirm("삭제?")){ const o=filteredCombinedObjects[selectedCombIndex]; o.element.parentNode.removeChild(o.element); parseAllObjects(); document.getElementById("combinedDetailView").style.display="none"; } }
+    function openMemberSelectModal(){ new bootstrap.Modal(document.getElementById('memberSelectModal')).show(); document.getElementById("memberSearchInput").value=""; document.getElementById("memberCandidateBody").innerHTML=""; }
+    function searchMemberCandidates(){
+        const q=document.getElementById("memberSearchInput").value.toLowerCase(), cg=filteredCombinedObjects[selectedCombIndex], tb=document.getElementById("memberCandidateBody"); tb.innerHTML="";
+        let c=0; for(let i of allObjNames){ if(c>50)break; if(i.name!==cg.name && !cg.members.includes(i.name) && i.name.toLowerCase().includes(q)){ c++; tb.innerHTML+=`<tr><td>${i.type}</td><td>${i.name}</td><td><button class="btn btn-sm btn-primary" onclick="addMemberFromModal('${i.name}')">선택</button></td></tr>`; } }
+        if(c===0)tb.innerHTML=`<tr><td colspan="3" class="text-center">없음</td></tr>`;
+    }
+    function addMemberFromModal(n){ const o=filteredCombinedObjects[selectedCombIndex]; o.members.push(n); const c=xmlDoc.createElement("child"); c.setAttribute("n",n); o.element.appendChild(c); bootstrap.Modal.getInstance(document.getElementById('memberSelectModal')).hide(); selectCombined(selectedCombIndex); }
+    function renderPagination(id, total, curr, cb) {
+        const nav = document.getElementById(id); nav.innerHTML = ""; const pages = Math.ceil(total / itemsPerPage); if (pages <= 1) return;
+        const li = (text, page, active, disabled) => `<li class="page-item ${active?'active':''} ${disabled?'disabled':''}"><button class="page-link" onclick="(${cb})(${page})">${text}</button></li>`;
+        nav.innerHTML += li("Prev", curr-1, false, curr===1);
+        let start = Math.max(1, curr - 2); let end = Math.min(pages, curr + 2);
+        if(start > 1) { nav.innerHTML += li("1", 1, false, false); if(start > 2) nav.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`; }
+        for (let i = start; i <= end; i++) nav.innerHTML += li(i, i, i === curr, false);
+        if(end < pages) { if(end < pages - 1) nav.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`; nav.innerHTML += li(pages, pages, false, false); }
+        nav.innerHTML += li("Next", curr+1, false, curr===pages);
+    }
+
+    function initLayerTabs() {
+        const layers = xmlDoc.getElementsByTagName("layer");
+        const tabContainer = document.getElementById("layerTabs"); tabContainer.innerHTML = "";
+        for(let i=0; i<layers.length; i++) {
+            const name = layers[i].getElementsByTagName("name")[0]?.textContent.trim() || `Layer ${i+1}`;
+            const li = document.createElement("li"); li.className = "nav-item";
+            const a = document.createElement("a"); a.className = `nav-link ${i === currentLayerIndex ? 'active' : ''}`;
+            a.innerText = name; a.onclick = () => { currentLayerIndex = i; initLayerTabs(); renderPolicyLayer(); };
+            li.appendChild(a); tabContainer.appendChild(li);
+        }
+        if(layers.length > 0) renderPolicyLayer();
+    }
+    function renderPolicyLayer() {
+        const curLayer = xmlDoc.getElementsByTagName("layer")[currentLayerIndex];
+        const container = document.getElementById("policyContainer"); const info = document.getElementById("layerInfo"); const badge = document.getElementById("layerTypeBadge");
+        container.innerHTML = ""; if(!curLayer) return;
+        const layerName = curLayer.getElementsByTagName("name")[0]?.textContent.trim(); const rawCplNode = curLayer.getElementsByTagName("raw-cpl")[0];
+        if (rawCplNode) {
+            info.innerText = layerName; badge.innerText = "CPL"; badge.className = "badge bg-warning text-dark me-2";
+            const txt = rawCplNode.textContent.replace("<![CDATA[","").replace("]]>","");
+            const ta = document.createElement("textarea"); ta.className = "cpl-editor"; ta.value = txt;
+            ta.onchange = function() { rawCplNode.textContent = `<![CDATA[${this.value}]]>`; };
+            container.appendChild(ta);
+        } else {
+            const rows = curLayer.getElementsByTagName("rowItem"); info.innerText = `${layerName} (${rows.length} Rules)`; badge.innerText = "Policy"; badge.className = "badge bg-info text-dark me-2";
+            const tableWrapper = document.createElement("div"); tableWrapper.className = "table-wrapper";
+            const table = document.createElement("table"); table.className = "table table-bordered table-hover text-nowrap";
+            table.innerHTML = `<thead class="table-dark sticky-top"></thead><tbody></tbody>`;
+            tableWrapper.appendChild(table); container.appendChild(tableWrapper); renderStandardTable(rows, table);
+        }
+    }
+    function renderStandardTable(rows, table) {
+        const tbody = table.querySelector("tbody"); const thead = table.querySelector("thead");
+        const knownCols = {'no':'No.', 'so':'Source', 'de':'Destination', 'se':'Service', 'ac':'Action', 'tr':'Track', 'ep':'Target', 'ti':'Time', 'co':'Comment'};
+        let columnIds = new Set(['no']); for(let i=0; i<Math.min(rows.length, 50); i++) { for(let c of rows[i].getElementsByTagName("colItem")) columnIds.add(c.getAttribute("id")); }
+        const standardOrder = ['no', 'so', 'de', 'se', 'ac', 'tr', 'ti', 'ep', 'co']; let finalColOrder = [];
+        standardOrder.forEach(id => { if(columnIds.has(id)) { finalColOrder.push(id); columnIds.delete(id); } }); columnIds.forEach(id => finalColOrder.push(id));
+        let trH = document.createElement("tr"); finalColOrder.forEach(id => { let th = document.createElement("th"); th.innerText = knownCols[id] || id.toUpperCase(); if(id==='no') th.style.width="40px"; trH.appendChild(th); }); thead.appendChild(trH);
+        const limit = Math.min(rows.length, 500); const frag = document.createDocumentFragment();
+        for(let i=0; i<limit; i++) {
+            let row = rows[i]; let tr = document.createElement("tr");
+            if(row.getAttribute("enabled") === "false") tr.classList.add("disabled-row");
+            tr.addEventListener('contextmenu', function(e) { handleContextMenu(e, i, row); });
+            let colData = {}; for(let c of row.getElementsByTagName("colItem")) colData[c.getAttribute("id")] = { name: c.getAttribute("name"), element: c };
+            finalColOrder.forEach(id => {
+                let td = document.createElement("td"); let cell = colData[id]; let val = cell ? (cell.name || "") : "";
+                if(id === 'no') { td.innerText = (i+1); td.classList.add("text-center", "fw-bold", "bg-light"); } 
+                else {
+                    td.innerText = val || "-"; td.classList.add("editable-cell"); if(!val) td.classList.add("text-muted");
+                    td.onclick = function() {
+                        if(this.querySelector("input")) return; const input = document.createElement("input"); input.type="text"; input.value=(this.innerText==="-")?"":this.innerText; input.className="inline-input";
+                        const save = () => { const v = input.value.trim(); if(cell && cell.element) cell.element.setAttribute("name", v); else if(v!=="") { const nc = xmlDoc.createElement("colItem"); nc.setAttribute("id", id); nc.setAttribute("name", v); row.appendChild(nc); cell = {name: v, element: nc}; colData[id] = cell; } this.innerText = v || "-"; if(!v) this.classList.add("text-muted"); else this.classList.remove("text-muted"); };
+                        input.onblur = save; input.onkeydown = (k) => { if(k.key==='Enter') { save(); input.blur(); } else if(k.key==='Escape') this.innerText = val||"-"; };
+                        this.innerHTML = ""; this.appendChild(input); input.focus();
+                    };
+                }
+                tr.appendChild(td);
+            });
+            frag.appendChild(tr);
+        }
+        tbody.appendChild(frag);
+    }
+    const contextMenu = document.getElementById("policyContextMenu");
+    document.addEventListener('click', () => contextMenu.style.display = 'none');
+    function handleContextMenu(e, rowIndex, rowElement) { e.preventDefault(); contextMenuTargetRowIndex = rowIndex; contextMenuTargetRowElement = rowElement; contextMenu.style.display = 'block'; contextMenu.style.left = `${e.pageX}px`; contextMenu.style.top = `${e.pageY}px`; }
+    function toggleDisableRule() { if (!contextMenuTargetRowElement) return; const current = contextMenuTargetRowElement.getAttribute("enabled"); contextMenuTargetRowElement.setAttribute("enabled", current === "false" ? "true" : "false"); renderPolicyLayer(); }
+    function insertRuleAt(offset) { const curLayer = xmlDoc.getElementsByTagName("layer")[currentLayerIndex]; const newRow = xmlDoc.createElement("rowItem"); newRow.setAttribute("enabled", "true"); ['so', 'de', 'se', 'ac'].forEach(id => { const col = xmlDoc.createElement("colItem"); col.setAttribute("id", id); col.setAttribute("name", id==='ac'?'Allow':'Any'); newRow.appendChild(col); }); if (contextMenuTargetRowIndex === -1) { curLayer.appendChild(newRow); } else { const rows = curLayer.getElementsByTagName("rowItem"); const targetRow = rows[contextMenuTargetRowIndex]; if (offset === -1) curLayer.insertBefore(newRow, targetRow); else { if (targetRow.nextSibling) curLayer.insertBefore(newRow, targetRow.nextSibling); else curLayer.appendChild(newRow); } } renderPolicyLayer(); }
+    function deleteTargetRule() { if (!contextMenuTargetRowElement || !contextMenuTargetRowElement.parentNode || !confirm("삭제?")) return; contextMenuTargetRowElement.parentNode.removeChild(contextMenuTargetRowElement); renderPolicyLayer(); }
+    function addNewLayer() { const n = prompt("새 레이어 이름:"); if (!n) return; const nl = xmlDoc.createElement("layer"); nl.setAttribute("disabled", "false"); const nt = xmlDoc.createElement("name"); nt.textContent = n; nl.appendChild(nt); xmlDoc.getElementsByTagName("vpmapp")[0].appendChild(nl); const ls = xmlDoc.getElementsByTagName("layer"); currentLayerIndex = ls.length - 1; initLayerTabs(); }
+    function deleteCurrentLayer() { if(!confirm("삭제?")) return; const l = xmlDoc.getElementsByTagName("layer")[currentLayerIndex]; l.parentNode.removeChild(l); currentLayerIndex = Math.max(0, currentLayerIndex - 1); initLayerTabs(); }
+    function downloadXML() { if (!xmlDoc) return alert("데이터 없음"); const s = new XMLSerializer(); const b = new Blob([s.serializeToString(xmlDoc)], {type: "text/xml"}); const l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = "vpm_mc_final.xml"; l.click(); }
+</script>
+</body>
+</html>

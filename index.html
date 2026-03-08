@@ -1,57 +1,252 @@
-<vpmapp> (Root: VPM 설정 전체)
-┃
-┣━━ 기본 정보 및 설정
-┃   ┣━━ <vpmxml-info>: XML 버전 정보
-┃   ┗━━ <enforcement-point>: 정책 적용 활성/비활성
-┃
-┣━━ 글로벌 리스트 정의
-┃   ┣━━ <Known-File-Ext> ➔ <File-Ext>: 파일 확장자 정의
-┃   ┗━━ <Known-Recip-Lists> ➔ <Recip-List>: 이메일 수신자 명단
-┃
-┣━━ <conditionObjects> (정책 조건 객체 - 핵심 정의 영역)
-┃   ┣━━ 네트워크/인프라: <ipobject>, <host-port>, <protocol>, <dns-rdns> (in <configObjects>)
-┃   ┣━━ 웹/앱 카테고리:
-┃   ┃   ┣━━ <vpm-cat> ➔ <node>, <child>: URL/카테고리 트리
-┃   ┃   ┣━━ <categorylist4> ➔ <sel>, <i>, <excl>, <sel-p>: 카테고리 선택 리스트
-┃   ┃   ┗━━ <app-url> ➔ <selected-applications>: 애플리케이션 정의
-┃   ┣━━ 요청/응답 상세:
-┃   ┃   ┣━━ <a-url>, <op-url> ➔ <selected-operations> ➔ <item>: URL 상세 동작
-┃   ┃   ┣━━ <user-agent-list> ➔ <user-agent-item>: 브라우저 정보
-┃   ┃   ┣━━ <hdr-obj>, <hdr-act>, <hdr-supp-list> ➔ <i>: HTTP 헤더 조작/조건
-┃   ┃   ┗━━ <appar-data-type> ➔ <adt-info>: 데이터 타입 분석
-┃   ┣━━ 보안 및 제어:
-┃   ┃   ┣━━ <ssl-fwd-prxy>, <ssl-fwd-prxy522>, <ssl-fwd-prxy-on-excep>: SSL 복호화/프록시 설정
-┃   ┃   ┣━━ <svr-cert>, <svr-cert-valdn>: 서버 인증서 검증
-┃   ┃   ┣━━ <file-download> ➔ <file-type-info>: 파일 다운로드 제어
-┃   ┃   ┗━━ <http-req-max-body-size>: 요청 크기 제한
-┃   ┣━━ 인증 및 관리: <adm-auth-obj>, <group>, <user-agent-list>, <policy-id>
-┃   ┣━━ 기타 조건: <time>(시간대), <trace-obj>(추적), <email>, <htm-ntfy>(알림)
-┃   ┗━━ 복합 객체: <comb-obj> ➔ <c-l-1>, <c-l-2>, <ai>: 여러 조건을 하나로 결합
-┃
-┣━━ <configObjects>: 환경 설정 객체 (예: <dns-rdns>)
-┃
-┗━━ <layers> (정책 실행 계층)
-┣━━ <layer> (개별 정책 테이블)
-┃   ┣━━ <name>: 레이어 이름
-┃   ┣━━ <numRows>: 포함된 규칙 수
-┃   ┗━━ <rowItem> (개별 규칙)
-┃       ┗━━ <colItem>, <colItemV2>: 규칙의 각 열(Source, Dest, Action 등)
-┗━━ <raw-cpl>: 직접 작성한 CPL(Content Policy Language) 코드
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPM XML 정책 구조 분석</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            background-color: #f9fbfd;
+        }
+        h1 {
+            text-align: center;
+            color: #003366;
+            border-bottom: 3px solid #003366;
+            padding-bottom: 15px;
+            margin-bottom: 40px;
+        }
+        h2 {
+            color: #0055a4;
+            border-left: 5px solid #0055a4;
+            padding-left: 10px;
+            margin-top: 40px;
+        }
+        .tag {
+            background-color: #f0f4f8;
+            color: #d63384;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        /* 트리 구조 스타일 */
+        .tree-container {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        ul.tree, ul.tree ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        ul.tree ul {
+            margin-left: 20px;
+            border-left: 2px dashed #ccc;
+            padding-left: 15px;
+        }
+        ul.tree li {
+            margin: 8px 0;
+            position: relative;
+        }
+        ul.tree li::before {
+            content: "";
+            position: absolute;
+            top: 12px;
+            left: -15px;
+            width: 10px;
+            border-top: 2px dashed #ccc;
+        }
+        ul.tree > li::before {
+            display: none;
+        }
+        .desc {
+            color: #666;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        /* 테이블 스타일 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #0055a4;
+            color: #ffffff;
+            font-weight: bold;
+            text-align: center;
+        }
+        tr:nth-child(even) {
+            background-color: #f8fafd;
+        }
+        tr:hover {
+            background-color: #f1f5fa;
+        }
+        /* 요약 박스 스타일 */
+        .summary-box {
+            background-color: #e6f0fa;
+            border-left: 5px solid #0055a4;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 20px;
+        }
+        .summary-box h3 {
+            margin-top: 0;
+            color: #003366;
+        }
+    </style>
+</head>
+<body>
 
-#구분,XML 태그 (항목),상세 역할 설명
-시스템/버전,"<vpmxml-info>, <enforcement-point>",XML의 생성 정보와 이 정책이 현재 장비에 적용 중인지를 나타냄
-파일/이메일,"<Known-File-Ext>, <Known-Recip-Lists>",자주 사용하는 파일 확장자 그룹과 경고 메시지를 보낼 이메일 주소 그룹 정의
-URL/카테고리,"<vpm-cat>, <categorylist4>, <a-url>, <op-url>","접속 허용/차단 대상이 되는 URL 주소, 카테고리, 그리고 그 안의 세부 동작 정의"
-애플리케이션,"<app-url>, <selected-applications>","Facebook, YouTube 등 특정 웹 앱 기반의 정밀한 제어 조건"
-네트워크 조건,"<ipobject>, <host-port>, <protocol>, <time>","IP 주소, 포트 번호, 사용 프로토콜, 그리고 정책이 적용될 시간 범위"
-HTTP 헤더/동작,"<hdr-obj>, <hdr-act>, <hdr-supp-list>, <user-agent-list>","HTTP 헤더 값(Referer 등)을 검사하거나 수정하고, 브라우저 종류에 따른 필터링"
-SSL/인증서,"<ssl-fwd-prxy>, <svr-cert-valdn>",암호화된 트래픽(HTTPS)을 복호화하여 검사할지 여부와 서버 인증서의 유효성 검사
-파일 제어,"<file-download>, <appar-data-type>",실제 다운로드되는 파일의 내용(Magic Number 등)을 분석하여 차단 여부 결정
-복합 객체,"<comb-obj>, <c-l-1>, <c-l-2>","""특정 시간"" + ""특정 그룹"" + ""특정 사이트"" 처럼 여러 조건을 AND/OR로 조합"
-정책 실행,"<layer>, <rowItem>, <colItem>, <colItemV2>",최종 실행 단계. 정의된 모든 객체를 조합하여 '누가 어디를 갈 때 어떻게 할지' 결정
-사용자 정의,<raw-cpl>,VPM UI로 표현하기 어려운 복잡한 정책을 CPL 언어로 직접 코딩한 영역
+    <h1>VPM XML 구조 및 역할 분석</h1>
 
-#관계성 요약
-정의부 (conditionObjects 등): 모든 재료(대상, 시간, 앱, 확장자 등)를 태그별로 잘게 쪼개어 정의합니다. 특히 <comb-obj>는 다른 작은 태그들을 묶어서 더 큰 조건을 만듭니다.
-참조부 (layer): 정의된 재료들을 불러와서 실제 규칙(rowItem)을 만듭니다. 이때 <colItem> 혹은 <colItemV2> 태그가 정의된 객체들의 ID나 이름을 참조하여 서로를 연결합니다.
-최종 결과: 사용자가 네트워크 접속을 시도하면, <layers>에 있는 규칙들을 위에서부터 아래로 훑으면서 해당되는 <conditionObjects>가 있는지 확인하고 동작(Action)을 결정합니다.
+    <h2>1. VPM XML 전체 계층 트리 구조</h2>
+    <div class="tree-container">
+        <ul class="tree">
+            <li><span class="tag">&lt;vpmapp&gt;</span> <span class="desc">(Root: VPM 설정 전체)</span>
+                <ul>
+                    <li><strong>기본 정보 및 설정</strong>
+                        <ul>
+                            <li><span class="tag">&lt;vpmxml-info&gt;</span> <span class="desc">XML 버전 정보</span></li>
+                            <li><span class="tag">&lt;enforcement-point&gt;</span> <span class="desc">정책 적용 활성/비활성</span></li>
+                        </ul>
+                    </li>
+                    <li><strong>글로벌 리스트 정의</strong>
+                        <ul>
+                            <li><span class="tag">&lt;Known-File-Ext&gt;</span> ➔ <span class="tag">&lt;File-Ext&gt;</span> <span class="desc">파일 확장자 정의</span></li>
+                            <li><span class="tag">&lt;Known-Recip-Lists&gt;</span> ➔ <span class="tag">&lt;Recip-List&gt;</span> <span class="desc">이메일 수신자 명단</span></li>
+                        </ul>
+                    </li>
+                    <li><strong><span class="tag">&lt;conditionObjects&gt;</span></strong> <span class="desc">(정책 조건 객체 - 핵심 정의 영역)</span>
+                        <ul>
+                            <li><strong>네트워크/인프라:</strong> <span class="tag">&lt;ipobject&gt;</span>, <span class="tag">&lt;host-port&gt;</span>, <span class="tag">&lt;protocol&gt;</span></li>
+                            <li><strong>웹/앱 카테고리:</strong>
+                                <ul>
+                                    <li><span class="tag">&lt;vpm-cat&gt;</span> ➔ <span class="tag">&lt;node&gt;</span>, <span class="tag">&lt;child&gt;</span></li>
+                                    <li><span class="tag">&lt;categorylist4&gt;</span> ➔ <span class="tag">&lt;sel&gt;</span>, <span class="tag">&lt;i&gt;</span>, <span class="tag">&lt;excl&gt;</span></li>
+                                    <li><span class="tag">&lt;app-url&gt;</span> ➔ <span class="tag">&lt;selected-applications&gt;</span></li>
+                                </ul>
+                            </li>
+                            <li><strong>요청/응답 상세:</strong> <span class="tag">&lt;a-url&gt;</span>, <span class="tag">&lt;op-url&gt;</span>, <span class="tag">&lt;user-agent-list&gt;</span>, <span class="tag">&lt;hdr-obj&gt;</span></li>
+                            <li><strong>보안 및 제어:</strong> <span class="tag">&lt;ssl-fwd-prxy&gt;</span>, <span class="tag">&lt;svr-cert&gt;</span>, <span class="tag">&lt;file-download&gt;</span></li>
+                            <li><strong>복합 객체:</strong> <span class="tag">&lt;comb-obj&gt;</span> ➔ <span class="tag">&lt;c-l-1&gt;</span>, <span class="tag">&lt;c-l-2&gt;</span> <span class="desc">(여러 조건을 하나로 결합)</span></li>
+                        </ul>
+                    </li>
+                    <li><strong><span class="tag">&lt;configObjects&gt;</span></strong> <span class="desc">환경 설정 객체 (예: dns-rdns)</span></li>
+                    <li><strong><span class="tag">&lt;layers&gt;</span></strong> <span class="desc">(정책 실행 계층)</span>
+                        <ul>
+                            <li><span class="tag">&lt;layer&gt;</span> <span class="desc">(개별 정책 테이블)</span>
+                                <ul>
+                                    <li><span class="tag">&lt;name&gt;</span> / <span class="tag">&lt;numRows&gt;</span></li>
+                                    <li><span class="tag">&lt;rowItem&gt;</span> <span class="desc">(개별 규칙)</span>
+                                        <ul>
+                                            <li><span class="tag">&lt;colItem&gt;</span>, <span class="tag">&lt;colItemV2&gt;</span> <span class="desc">(규칙의 각 열: Source, Dest, Action 등)</span></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><span class="tag">&lt;raw-cpl&gt;</span> <span class="desc">직접 작성한 CPL(Content Policy Language) 코드</span></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <h2>2. 주요 항목별 상세 역할 표</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 15%;">구분</th>
+                <th style="width: 35%;">XML 태그 (항목)</th>
+                <th style="width: 50%;">상세 역할 설명</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>시스템/버전</strong></td>
+                <td><span class="tag">&lt;vpmxml-info&gt;</span>, <span class="tag">&lt;enforcement-point&gt;</span></td>
+                <td>XML의 생성 정보와 이 정책이 현재 장비에 적용 중인지를 나타냅니다.</td>
+            </tr>
+            <tr>
+                <td><strong>파일/이메일</strong></td>
+                <td><span class="tag">&lt;Known-File-Ext&gt;</span>, <span class="tag">&lt;Known-Recip-Lists&gt;</span></td>
+                <td>자주 사용하는 파일 확장자 그룹과 경고 메시지를 보낼 이메일 주소 그룹을 정의합니다.</td>
+            </tr>
+            <tr>
+                <td><strong>URL/카테고리</strong></td>
+                <td><span class="tag">&lt;vpm-cat&gt;</span>, <span class="tag">&lt;categorylist4&gt;</span>, <span class="tag">&lt;a-url&gt;</span></td>
+                <td>접속 허용/차단 대상이 되는 URL 주소, 카테고리, 그리고 그 안의 세부 동작을 정의합니다.</td>
+            </tr>
+            <tr>
+                <td><strong>애플리케이션</strong></td>
+                <td><span class="tag">&lt;app-url&gt;</span>, <span class="tag">&lt;selected-applications&gt;</span></td>
+                <td>Facebook, YouTube 등 특정 웹 앱 기반의 정밀한 제어 조건을 설정합니다.</td>
+            </tr>
+            <tr>
+                <td><strong>네트워크 조건</strong></td>
+                <td><span class="tag">&lt;ipobject&gt;</span>, <span class="tag">&lt;host-port&gt;</span>, <span class="tag">&lt;protocol&gt;</span></td>
+                <td>IP 주소, 포트 번호, 사용 프로토콜 및 정책이 적용될 시간 범위를 설정합니다.</td>
+            </tr>
+            <tr>
+                <td><strong>HTTP 헤더/동작</strong></td>
+                <td><span class="tag">&lt;hdr-obj&gt;</span>, <span class="tag">&lt;user-agent-list&gt;</span></td>
+                <td>HTTP 헤더 값(Referer 등)을 검사/수정하고 브라우저 종류에 따른 필터링을 수행합니다.</td>
+            </tr>
+            <tr>
+                <td><strong>SSL/인증서</strong></td>
+                <td><span class="tag">&lt;ssl-fwd-prxy&gt;</span>, <span class="tag">&lt;svr-cert-valdn&gt;</span></td>
+                <td>암호화된 트래픽(HTTPS)의 복호화 검사 여부와 서버 인증서의 유효성을 검사합니다.</td>
+            </tr>
+            <tr>
+                <td><strong>파일 제어</strong></td>
+                <td><span class="tag">&lt;file-download&gt;</span>, <span class="tag">&lt;appar-data-type&gt;</span></td>
+                <td>실제 다운로드되는 파일의 내용(Magic Number 등)을 분석하여 차단 여부를 결정합니다.</td>
+            </tr>
+            <tr>
+                <td><strong>복합 객체</strong></td>
+                <td><span class="tag">&lt;comb-obj&gt;</span>, <span class="tag">&lt;c-l-1&gt;</span>, <span class="tag">&lt;c-l-2&gt;</span></td>
+                <td>"특정 시간 + 특정 그룹 + 특정 사이트"처럼 여러 조건을 AND/OR로 조합합니다.</td>
+            </tr>
+            <tr>
+                <td><strong>정책 실행</strong></td>
+                <td><span class="tag">&lt;layer&gt;</span>, <span class="tag">&lt;rowItem&gt;</span>, <span class="tag">&lt;colItem&gt;</span></td>
+                <td><strong>최종 실행 단계.</strong> 정의된 모든 객체를 조합하여 '누가 어디를 갈 때 어떻게 할지' 결정합니다.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>3. 관계성 요약</h2>
+    <div class="summary-box">
+        <h3>💡 VPM XML의 핵심 동작 원리</h3>
+        <p><strong>1. 정의부 (<span class="tag">&lt;conditionObjects&gt;</span> 등):</strong><br>
+        모든 재료(대상, 시간, 앱, 확장자 등)를 태그별로 잘게 쪼개어 정의합니다. 특히 <span class="tag">&lt;comb-obj&gt;</span>는 작은 태그들을 묶어서 더 큰 조건을 만드는 역할을 합니다.</p>
+        
+        <p><strong>2. 참조부 (<span class="tag">&lt;layer&gt;</span>):</strong><br>
+        정의된 재료들을 불러와서 실제 규칙(<span class="tag">&lt;rowItem&gt;</span>)을 만듭니다. 이때 <span class="tag">&lt;colItem&gt;</span> 태그가 앞서 정의된 객체들의 ID나 이름을 참조하여 서로를 연결(Mapping)합니다.</p>
+
+        <p><strong>3. 최종 결과:</strong><br>
+        사용자가 네트워크 접속을 시도하면, <span class="tag">&lt;layers&gt;</span>에 있는 규칙들을 최상단부터 순차적으로(Top-Down) 검사하여 조건이 일치하는 규칙의 동작(Action)을 수행합니다.</p>
+    </div>
+
+</body>
+</html>

@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ProxySG 정책 XML</title>
+  <title>ProxySG 정책 XML & Converter</title>
 <style>
   .container {
     background:#fff; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,0.08);
@@ -68,7 +68,7 @@
   }
   details.tree-node[open] > summary::before { transform: translateY(-70%) rotate(45deg); }
 
-  /* 1. 최상위 대항목 (Depth 0: vpmapp - 다크 네이비) */
+  /* 1. 최상위 대항목 (Depth 0) */
   details.depth-0 > summary {
     background: #1e293b; color: #f8fafc; border-radius: 12px;
     padding: 16px 20px 16px 44px; box-shadow: var(--shadow-md, 0 4px 6px rgba(0,0,0,0.05));
@@ -79,7 +79,7 @@
   details.depth-0 > summary .meta { background: #475569; color: #e2e8f0; }
   details.depth-0 > summary .path { color: #94a3b8; }
 
-  /* 2. 주요 대항목 (Depth 1: conditionObjects, layers 등 - 파란색) */
+  /* 2. 주요 대항목 (Depth 1) */
   details.depth-1 > summary {
     background: #ffffff; border: 1px solid #cbd5e1; border-left: 6px solid #3b82f6;
     border-radius: 8px; padding: 14px 16px 14px 40px; box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05)); margin-top: 16px;
@@ -88,7 +88,7 @@
   details.depth-1 > summary::before { left: 16px; border-color: #3b82f6; }
   details.depth-1 > summary .tag { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 15px; }
 
-  /* 3. 세부항목 1단계 (Depth 2: 객체 그룹들 - 보라색) */
+  /* 3. 세부항목 1단계 (Depth 2) */
   details.depth-2 > summary {
     background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid #8b5cf6;
     border-radius: 6px; padding: 10px 14px 10px 36px; margin-top: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
@@ -97,7 +97,7 @@
   details.depth-2 > summary::before { left: 14px; border-color: #7c3aed; }
   details.depth-2 > summary .tag { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
 
-  /* 4. 세부항목 2단계 (Depth 3: 세부 노드 - 초록색) */
+  /* 4. 세부항목 2단계 (Depth 3) */
   details.depth-3 > summary {
     background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #10b981;
     border-radius: 6px; padding: 8px 12px 8px 32px; margin-top: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
@@ -106,7 +106,7 @@
   details.depth-3 > summary::before { left: 12px; border-color: #059669; }
   details.depth-3 > summary .tag { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
 
-  /* 5. 세부항목 3단계 (Depth 4: 추가 옵션 - 주황색) */
+  /* 5. 세부항목 3단계 (Depth 4) */
   details.depth-4 > summary {
     background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #f59e0b;
     border-radius: 6px; padding: 8px 12px 8px 32px; margin-top: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
@@ -173,10 +173,10 @@
   }
 
   /* =========================================
-     [신규] 컨버터 뷰 (Split UI)
+     컨버터 뷰 (Split UI)
      ========================================= */
   #converter-view {
-    display: none; /* 기본은 숨김 */
+    display: none; 
     animation: fadeIn 0.3s ease;
   }
   
@@ -188,7 +188,7 @@
   .split-container {
     display: flex;
     gap: 24px;
-    height: calc(100vh - 300px);
+    height: calc(100vh - 250px);
     min-height: 600px;
   }
 
@@ -204,7 +204,7 @@
   }
 
   .panel-header {
-    padding: 16px 20px;
+    padding: 14px 20px;
     border-bottom: 1px solid var(--line, #d8dee8);
     background: #f8fafc;
     display: flex;
@@ -223,6 +223,22 @@
 
   .badge-somansa { background: #fce7f3; color: #be123c; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
   .badge-symantec { background: #e0e7ff; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+
+  /* 버튼 UI (Header 위치용) */
+  .btn-convert {
+    background: var(--accent, #2563eb); color: white; border: none;
+    padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    transition: background 0.2s;
+  }
+  .btn-convert:hover { background: var(--accent-hover, #1d4ed8); }
+
+  .btn-copy {
+    background: white; color: #475569; border: 1px solid #cbd5e1;
+    padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-copy:hover { background: #f1f5f9; color: #0f172a; }
 
   .panel-body {
     flex: 1;
@@ -243,33 +259,13 @@
     color: #334155;
     background: #ffffff;
     outline: none;
+    white-space: pre;
+    overflow-x: auto;
   }
   
   textarea:focus { background: #fdfdfe; }
   
-  #symantec-output { background: #f8fafc; color: #0f172a; }
-
-  .panel-footer {
-    padding: 16px 20px;
-    border-top: 1px solid var(--line, #d8dee8);
-    background: #f8fafc;
-    text-align: right;
-  }
-
-  .btn-convert {
-    background: var(--accent, #2563eb); color: white; border: none;
-    padding: 10px 24px; border-radius: 8px; font-weight: bold; font-size: 14px;
-    cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
-    transition: background 0.2s;
-  }
-  .btn-convert:hover { background: var(--accent-hover, #1d4ed8); }
-
-  .btn-copy {
-    background: white; color: #475569; border: 1px solid #cbd5e1;
-    padding: 10px 24px; border-radius: 8px; font-weight: bold; font-size: 14px;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .btn-copy:hover { background: #f1f5f9; color: #0f172a; }
+  #symantec-output { background: #1e293b; color: #e2e8f0; }
 
   @media (max-width: 1024px) {
     .split-container { flex-direction: column; height: auto; min-height: 0; }
@@ -680,28 +676,77 @@ client.address=1.1.1.1 detect_protocol (no) allow
         <div class="panel">
           <div class="panel-header">
             <h3><span class="badge-somansa">Input</span> 소만사 객체/정책 데이터</h3>
+            <button class="btn-convert" onclick="runConversion()">변환 실행 ➔</button>
           </div>
           <div class="panel-body">
-            <textarea id="somansa-input" placeholder="여기에 소만사에서 추출한 데이터(TXT, CSV, JSON 등)를 붙여넣으세요.&#10;&#10;[예정 작업]&#10;- 향후 전달해주실 소만사 데이터 포맷에 맞추어 파싱 로직을 구현할 예정입니다."></textarea>
-          </div>
-          <div class="panel-footer">
-            <button class="btn-convert" onclick="runConversion()">
-              변환 실행 ➔
-            </button>
+            <textarea id="somansa-input" placeholder="여기에 소만사 데이터를 입력하세요.
+
+[객체 예시 - 다중 URL]
+<NetAPP>
+define NetAppcategory &quot;이름&quot;
+url1
+url2
+end NetAppcategory &quot;이름&quot;
+<NetAPP/>
+
+[객체 예시 - 단일 URL/URI]
+<userdefinedurl>
+define webcategory &quot;단일이름&quot;
+test.com/path
+end webcategory &quot;단일이름&quot;
+</userdefinedurl>
+
+[객체 예시 - IP]
+<Target>
+define Target &quot;이름&quot;
+1.1.1.1 all
+2.2.2.2 all
+end Target &quot;이름&quot;
+<Target/>
+
+[정책 예시 - TLS]
+<TLS-Policy>
+define Policy &quot;TLS이름&quot;
+policy
+name=TLS이름 prioirty=1 activated=사용 desc=설명
+policy/
+rule
+address direction=inbound
+adress name=1.1.1.1
+rule/
+end policy &quot;TLS이름&quot;
+<TLS-Policy/>
+
+[정책 예시 - HTTP]
+<HTTP-Policy>
+define Policy &quot;HTTP이름&quot;
+policy
+name=HTTP이름 prioirty=2 activated=사용 desc=HTTP설명
+policy/
+rule
+http-type=request
+address direction=outbound
+adress name=2.2.2.2
+userDefinedCategory name=카테고리이름
+web-category-id value=신규카테고리
+webUrlList: url1, url2
+rule/
+actions
+action value=차단
+block-message value=차단안내페이지
+actions/
+end policy &quot;HTTP이름&quot;
+<HTTP-Policy/>"></textarea>
           </div>
         </div>
 
         <div class="panel">
           <div class="panel-header">
             <h3><span class="badge-symantec">Output</span> 시만텍 VPM XML 결과</h3>
+            <button class="btn-copy" onclick="copyToClipboard()">📄 결과 복사하기</button>
           </div>
           <div class="panel-body">
-            <textarea id="symantec-output" readonly placeholder="변환 버튼을 누르면 시만텍 기준의 XML 코드(&lt;conditionObjects&gt;, &lt;layers&gt; 등)가 이곳에 생성됩니다."></textarea>
-          </div>
-          <div class="panel-footer">
-            <button class="btn-copy" onclick="copyToClipboard()">
-              📄 결과 복사하기
-            </button>
+            <textarea id="symantec-output" readonly placeholder="변환된 시만텍 기준의 XML 코드(&lt;conditionObjects&gt; 및 &lt;layer&gt;)가 생성됩니다."></textarea>
           </div>
         </div>
 
@@ -730,7 +775,7 @@ function switchView(viewName) {
   }
 }
 
-// --- 임시 컨버팅 로직 (추후 소만사 포맷에 맞춰 정교화 예정) ---
+// --- 소만사 to 시만텍 자동 파싱 로직 ---
 function runConversion() {
   const inputData = document.getElementById('somansa-input').value;
   const outputBox = document.getElementById('symantec-output');
@@ -740,19 +785,224 @@ function runConversion() {
     return;
   }
 
-  outputBox.value = "\n";
+  let vpmCatNodes = [];
+  let ipObjects = [];
+  let combObjects = [];
+  let aUrlObjects = []; 
   
-  // TO-DO: 소만사 데이터가 들어오면 정규식 및 JSON 파싱 등을 통해
-  // 아래와 같은 형태로 XML 문자열을 조합하여 outputBox.value에 넣어줄 예정입니다.
-  
-  setTimeout(() => {
-    outputBox.value = `<vpmapp>
-  <conditionObjects>
-    </conditionObjects>
-  <layers>
-    </layers>
-</vpmapp>`;
-  }, 500);
+  let tlsRowItems = [];
+  let httpRowItems = [];
+  let tlsRowCount = 0;
+  let httpRowCount = 0;
+
+  // 1. URL 기반 다중 객체 파싱 (<NetAPP>)
+  const netAppRegex = /define\s+NetAppcategory\s+["'“”](.*?)["'“”]([\s\S]*?)end\s+NetAppcategory/ig;
+  let matchURL;
+  while ((matchURL = netAppRegex.exec(inputData)) !== null) {
+      const name = matchURL[1].trim();
+      const rawUrls = matchURL[2].split('\n').map(line => line.trim());
+      const validUrls = rawUrls.filter(u => u && !u.startsWith('<'));
+      const urlString = validUrls.join('&#10;');
+      vpmCatNodes.push(`      <node\n        n="${name}"\n        u-l="${urlString}">\n      </node>`);
+  }
+
+  // 1-2. URL 기반 단일/다중 객체 파싱 (<userdefinedurl>)
+  const webCatRegex = /define\s+webcategory\s+["'“”](.*?)["'“”]([\s\S]*?)end\s+webcategory/ig;
+  let matchWebCat;
+  while ((matchWebCat = webCatRegex.exec(inputData)) !== null) {
+      const name = matchWebCat[1].trim();
+      const rawUrls = matchWebCat[2].split('\n').map(line => line.trim());
+      const validUrls = rawUrls.filter(u => u && !u.startsWith('<'));
+
+      if (validUrls.length === 1) {
+          const fullUrl = validUrls[0];
+          let domain = fullUrl;
+          let pathStr = "";
+          
+          const slashIdx = fullUrl.indexOf('/');
+          if (slashIdx !== -1) {
+              domain = fullUrl.substring(0, slashIdx);
+              const path = fullUrl.substring(slashIdx);
+              pathStr = `\n      p="${path}"\n      p-t="contains"`;
+          }
+          aUrlObjects.push(`    <a-url\n      name="${name}"\n      d="${domain}"${pathStr}>\n    </a-url>`);
+      } else if (validUrls.length > 1) {
+          const urlString = validUrls.join('&#10;');
+          vpmCatNodes.push(`      <node\n        n="${name}"\n        u-l="${urlString}">\n      </node>`);
+      }
+  }
+
+  // 2. IP 기반 객체 파싱 (<Target>)
+  const targetRegex = /define\s+Target\s+["'“”](.*?)["'“”]([\s\S]*?)end\s+Target/ig;
+  let matchIP;
+  while ((matchIP = targetRegex.exec(inputData)) !== null) {
+      const name = matchIP[1].trim();
+      const rawIps = matchIP[2].split('\n').map(line => line.trim());
+      const validIps = rawIps.filter(i => i && !i.startsWith('<'));
+
+      if (validIps.length === 1) {
+          const ip = validIps[0].replace(/\s+all/ig, ''); 
+          ipObjects.push(`    <ipobject\n      name="${name}"\n      single="false"\n      type="1"\n      value="${ip}">\n    </ipobject>`);
+      } else if (validIps.length > 1) {
+          let cList = [];
+          validIps.forEach((line, index) => {
+              const ip = line.replace(/\s+all/ig, '');
+              const objName = `${name}_${index + 1}`;
+              ipObjects.push(`    <ipobject\n      name="${objName}"\n      single="false"\n      type="1"\n      value="${ip}">\n    </ipobject>`);
+              cList.push(`      <c-l-1 n="${objName}"></c-l-1>`);
+          });
+          combObjects.push(`    <comb-obj\n      name="${name}"\n      t="2"\n      n-1="false"\n      n-2="false">\n${cList.join('\n')}\n    </comb-obj>`);
+      }
+  }
+
+  // 3-1. TLS-Policy 파싱
+  const tlsOuterRegex = /<TLS-Policy>([\s\S]*?)(?:<TLS-Policy\/>|<\/TLS-Policy>)/ig;
+  let tlsMatch;
+  while ((tlsMatch = tlsOuterRegex.exec(inputData)) !== null) {
+      const block = tlsMatch[1];
+      const policyRegex = /define\s+Policy\s+["'“”](.*?)["'“”]([\s\S]*?)end\s+policy/ig;
+      let pMatch;
+      while ((pMatch = policyRegex.exec(block)) !== null) {
+          const polNameStr = pMatch[1].trim();
+          const pBody = pMatch[2];
+
+          const nameMatch = pBody.match(/name=(.*?)\s+(?:prioirty|priority)=/i);
+          const prioMatch = pBody.match(/(?:prioirty|priority)=(.*?)\s+activated=/i);
+          const actMatch = pBody.match(/activated=(.*?)\s+/i);
+          const descMatch = pBody.match(/desc=(.*?)\s+(?:editDate=|expireDate=|expired=)/i);
+
+          const pName = nameMatch ? nameMatch[1].trim() : polNameStr;
+          const pPriority = prioMatch ? prioMatch[1].trim() : "1";
+          const isEnabled = (actMatch && actMatch[1].trim() === "사용") ? "true" : "false";
+          const pDesc = descMatch ? descMatch[1].trim() : "";
+          const comment = pDesc ? `${pName} ${pDesc}` : pName;
+
+          const dirMatch = pBody.match(/address\s+direction=(.*)/i);
+          const addrMatch = pBody.match(/(?:address|adress)\s+name=(.*)/i);
+          const typeMatch = pBody.match(/type\s+name=(.*)/i);
+          const catMatch = pBody.match(/userDefinedCategory\s+name=(.*)/i);
+
+          const direction = dirMatch ? dirMatch[1].trim().toLowerCase() : "";
+          const addrName = addrMatch ? addrMatch[1].trim() : "";
+          const typeName = typeMatch ? typeMatch[1].trim() : "";
+          const catName = catMatch ? catMatch[1].trim() : "";
+
+          let soName = "Any"; let deName = "Any";
+
+          if (direction === "inbound" && addrName) { soName = addrName; } 
+          else if (direction === "outbound" && addrName) { deName = addrName; }
+
+          if (typeName) soName = soName === "Any" ? typeName : soName;
+          if (catName) deName = deName === "Any" ? catName : deName;
+
+          const soType = soName === "Any" ? "String" : "Condition";
+          const deType = deName === "Any" ? "String" : "Condition";
+
+          tlsRowItems.push(`      <rowItem\n        enabled="${isEnabled}"\n        num="${tlsRowCount}">\n        <colItem col="0" id="no" value="${pPriority}"></colItem>\n        <colItem col="1" id="so" name="${soName}" type="${soType}"></colItem>\n        <colItem col="2" id="de" name="${deName}" type="${deType}"></colItem>\n        <colItem col="3" id="se" name="Any" type="String"></colItem>\n        <colItem col="4" id="ac" name="None" type="String"></colItem>\n        <colItem col="6" id="co" name="${comment}" type="String"></colItem>\n      </rowItem>`);
+          tlsRowCount++;
+      }
+  }
+
+  // 3-2. HTTP-Policy 파싱
+  const httpOuterRegex = /<HTTP-Policy>([\s\S]*?)(?:<HTTP-Policy\/>|<\/HTTP-Policy>)/ig;
+  let httpMatch;
+  while ((httpMatch = httpOuterRegex.exec(inputData)) !== null) {
+      const block = httpMatch[1];
+      const policyRegex = /define\s+Policy\s+["'“”](.*?)["'“”]([\s\S]*?)end\s+policy/ig;
+      let pMatch;
+      while ((pMatch = policyRegex.exec(block)) !== null) {
+          const polNameStr = pMatch[1].trim();
+          const pBody = pMatch[2];
+
+          // Policy 파싱
+          const nameMatch = pBody.match(/name=(.*?)\s+(?:prioirty|priority)=/i);
+          const prioMatch = pBody.match(/(?:prioirty|priority)=(.*?)\s+activated=/i);
+          const actMatch = pBody.match(/activated=(.*?)\s+/i);
+          const descMatch = pBody.match(/desc=(.*?)\s+(?:editDate=|expireDate=|expired=)/i);
+
+          const pName = nameMatch ? nameMatch[1].trim() : polNameStr;
+          const pPriority = prioMatch ? prioMatch[1].trim() : "1";
+          const isEnabled = (actMatch && actMatch[1].trim() === "사용") ? "true" : "false";
+          const pDesc = descMatch ? descMatch[1].trim() : "";
+          const comment = pDesc ? `${pName} ${pDesc}` : pName;
+
+          // Rule 파싱
+          const dirMatch = pBody.match(/address\s+direction=(.*)/i);
+          const addrMatch = pBody.match(/(?:address|adress)\s+name=(.*)/i);
+          const userCatMatch = pBody.match(/userDefinedCategory\s+name=(.*)/i);
+          const webCatIdMatch = pBody.match(/web-category-id\s+value=(.*)/i);
+          const webUrlListMatch = pBody.match(/webUrlList:\s*(.*)/i);
+
+          const direction = dirMatch ? dirMatch[1].trim().toLowerCase() : "";
+          const addrName = addrMatch ? addrMatch[1].trim() : "";
+          const userCatName = userCatMatch ? userCatMatch[1].trim() : "";
+          const webCatId = webCatIdMatch ? webCatIdMatch[1].trim() : "";
+          const webUrlList = webUrlListMatch ? webUrlListMatch[1].trim() : "";
+
+          let soName = "Any"; let deName = "Any";
+
+          if (direction.includes("inbound") && addrName) { soName = addrName; } 
+          else if (direction.includes("outbound") && addrName) { deName = addrName; }
+
+          if (userCatName) deName = deName === "Any" ? userCatName : deName;
+
+          // web-category-id 가 있으면 목적지로 매핑하고 <node> 객체 생성
+          if (webCatId) {
+              deName = deName === "Any" ? webCatId : deName;
+              if (webUrlList) {
+                  const urls = webUrlList.split(',').map(u => u.trim()).filter(u => u).join('&#10;');
+                  vpmCatNodes.push(`      <node\n        n="${webCatId}"\n        u-l="${urls}">\n      </node>`);
+              }
+          }
+
+          // Actions 파싱
+          const actionMatch = pBody.match(/action\s+value=(.*)/i);
+          const blockMsgMatch = pBody.match(/block-message\s+value=(.*)/i);
+          
+          const actionVal = actionMatch ? actionMatch[1].trim() : "";
+          const blockMsg = blockMsgMatch ? blockMsgMatch[1].trim() : "";
+
+          let acName = "None";
+          if (actionVal === "허용") {
+              acName = "Allow";
+          } else if (actionVal === "차단") {
+              acName = blockMsg ? blockMsg : "Deny";
+          }
+
+          const soType = soName === "Any" ? "String" : "Condition";
+          const deType = deName === "Any" ? "String" : "Condition";
+          const acType = (acName === "Allow" || acName === "Deny" || acName === "None") ? "String" : "Condition";
+
+          httpRowItems.push(`      <rowItem\n        enabled="${isEnabled}"\n        num="${httpRowCount}">\n        <colItem col="0" id="no" value="${pPriority}"></colItem>\n        <colItem col="1" id="so" name="${soName}" type="${soType}"></colItem>\n        <colItem col="2" id="de" name="${deName}" type="${deType}"></colItem>\n        <colItem col="3" id="se" name="Any" type="String"></colItem>\n        <colItem col="4" id="ac" name="${acName}" type="${acType}"></colItem>\n        <colItem col="6" id="co" name="${comment}" type="String"></colItem>\n      </rowItem>`);
+          httpRowCount++;
+      }
+  }
+
+  // 4. 최종 XML 문자열 조합
+  let outputXML = `<?xml version="1.0" encoding="UTF-8"?>\n<vpmapp>\n  <conditionObjects>\n`;
+
+  if (vpmCatNodes.length > 0) { outputXML += `    <vpm-cat>\n${vpmCatNodes.join('\n')}\n    </vpm-cat>\n`; }
+  if (aUrlObjects.length > 0) { outputXML += `${aUrlObjects.join('\n')}\n`; }
+  if (ipObjects.length > 0) { outputXML += `${ipObjects.join('\n')}\n`; }
+  if (combObjects.length > 0) { outputXML += `${combObjects.join('\n')}\n`; }
+
+  outputXML += `  </conditionObjects>\n`;
+
+  if (tlsRowItems.length > 0 || httpRowItems.length > 0) {
+      outputXML += `  <layers>\n`;
+      if (tlsRowItems.length > 0) {
+          outputXML += `    <layer layertype="com.bluecoat.sgos.vpm.SSLAccessPolicyTable">\n      <name>TLS Policies</name>\n      <numRows>${tlsRowCount}</numRows>\n${tlsRowItems.join('\n')}\n    </layer>\n`;
+      }
+      if (httpRowItems.length > 0) {
+          outputXML += `    <layer layertype="com.bluecoat.sgos.vpm.WebAccessPolicyTable">\n      <name>HTTP Policies</name>\n      <numRows>${httpRowCount}</numRows>\n${httpRowItems.join('\n')}\n    </layer>\n`;
+      }
+      outputXML += `  </layers>\n`;
+  } else {
+      outputXML += `  <layers>\n  </layers>\n`;
+  }
+
+  outputXML += `</vpmapp>`;
+  outputBox.value = outputXML;
 }
 
 // --- 결과 복사 기능 ---
@@ -764,7 +1014,7 @@ function copyToClipboard() {
   }
   
   outputBox.select();
-  outputBox.setSelectionRange(0, 99999); // 모바일 대응
+  outputBox.setSelectionRange(0, 99999); 
   document.execCommand("copy");
   
   alert("클립보드에 복사되었습니다!");

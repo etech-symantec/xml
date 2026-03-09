@@ -2,250 +2,193 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VPM XML 정책 구조 분석</title>
+    <title>VPM XML 초정밀 트리 구조 (전체 속성 포함)</title>
     <style>
         body {
-            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            font-family: 'Consolas', 'Malgun Gothic', monospace;
             line-height: 1.6;
             color: #333;
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 30px 20px;
-            background-color: #f9fbfd;
-        }
-        h1 {
-            text-align: center;
-            color: #003366;
-            border-bottom: 3px solid #003366;
-            padding-bottom: 15px;
-            margin-bottom: 40px;
-        }
-        h2 {
-            color: #0055a4;
-            border-left: 5px solid #0055a4;
-            padding-left: 10px;
-            margin-top: 40px;
-        }
-        .tag {
-            background-color: #f0f4f8;
-            color: #d63384;
-            font-family: 'Courier New', Courier, monospace;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 0.95em;
-        }
-        /* 트리 구조 스타일 */
-        .tree-container {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px 30px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        ul.tree, ul.tree ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-        }
-        ul.tree ul {
-            margin-left: 20px;
-            border-left: 2px dashed #ccc;
-            padding-left: 15px;
-        }
-        ul.tree li {
-            margin: 8px 0;
-            position: relative;
-        }
-        ul.tree li::before {
-            content: "";
-            position: absolute;
-            top: 12px;
-            left: -15px;
-            width: 10px;
-            border-top: 2px dashed #ccc;
-        }
-        ul.tree > li::before {
-            display: none;
-        }
-        .desc {
-            color: #666;
-            font-size: 0.9em;
-            margin-left: 10px;
-        }
-        /* 테이블 스타일 */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #ffffff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border-radius: 8px;
-            overflow: hidden;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #e0e0e0;
-            padding: 12px 15px;
-            text-align: left;
-        }
-        th {
-            background-color: #0055a4;
-            color: #ffffff;
-            font-weight: bold;
-            text-align: center;
-        }
-        tr:nth-child(even) {
-            background-color: #f8fafd;
-        }
-        tr:hover {
-            background-color: #f1f5fa;
-        }
-        /* 요약 박스 스타일 */
-        .summary-box {
-            background-color: #e6f0fa;
-            border-left: 5px solid #0055a4;
+            background-color: #f4f7f6;
             padding: 20px;
-            border-radius: 0 8px 8px 0;
-            margin-bottom: 20px;
         }
-        .summary-box h3 {
-            margin-top: 0;
-            color: #003366;
+        h1 { color: #2c3e50; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
+        .tree-container {
+            background-color: #fff;
+            border: 1px solid #dcdde1;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow-x: auto;
         }
+        ul.tree, ul.tree ul { list-style-type: none; margin: 0; padding: 0; }
+        ul.tree ul { margin-left: 25px; border-left: 1px dotted #a4b0be; padding-left: 15px; }
+        ul.tree li { margin: 6px 0; position: relative; }
+        ul.tree li::before {
+            content: ""; position: absolute; top: 12px; left: -15px; width: 12px; border-top: 1px dotted #a4b0be;
+        }
+        ul.tree > li::before { display: none; }
+        
+        .tag { color: #c0392b; font-weight: bold; background-color: #fad390; padding: 2px 5px; border-radius: 4px; }
+        .attr { color: #2980b9; font-size: 0.95em; margin-left: 5px; }
+        .attr-val { color: #27ae60; }
+        .desc { color: #7f8c8d; font-size: 0.9em; margin-left: 10px; font-style: italic; }
+        
+        /* 그룹 구분을 위한 배경색 */
+        .group-title { margin-top: 15px; font-weight: bold; color: #8e44ad; }
     </style>
 </head>
 <body>
 
-    <h1>VPM XML 구조 및 역할 분석</h1>
+    <h1>VPM XML 전체 계층 구조 (모든 태그 및 상세 속성 포함)</h1>
 
-    <h2>1. VPM XML 전체 계층 트리 구조</h2>
     <div class="tree-container">
         <ul class="tree">
-            <li><span class="tag">&lt;vpmapp&gt;</span> <span class="desc">(Root: VPM 설정 전체)</span>
+            <li><span class="tag">&lt;vpmapp&gt;</span> <span class="desc">VPM 설정 루트 노드</span>
                 <ul>
-                    <li><strong>기본 정보 및 설정</strong>
+                    <li><span class="tag">&lt;vpmxml-info&gt;</span> <span class="attr">version=<span class="attr-val">"631"</span></span></li>
+                    <li><span class="tag">&lt;enforcement-point&gt;</span> <span class="attr">enabled=<span class="attr-val">"false"</span></span></li>
+
+                    <li class="group-title">▼ 조건 및 대상 정의부 (conditionObjects)</li>
+                    <li><span class="tag">&lt;conditionObjects&gt;</span>
                         <ul>
-                            <li><span class="tag">&lt;vpmxml-info&gt;</span> <span class="desc">XML 버전 정보</span></li>
-                            <li><span class="tag">&lt;enforcement-point&gt;</span> <span class="desc">정책 적용 활성/비활성</span></li>
-                        </ul>
-                    </li>
-                    <li><strong>글로벌 리스트 정의</strong>
-                        <ul>
-                            <li><span class="tag">&lt;Known-File-Ext&gt;</span> ➔ <span class="tag">&lt;File-Ext&gt;</span> <span class="desc">파일 확장자 정의</span></li>
-                            <li><span class="tag">&lt;Known-Recip-Lists&gt;</span> ➔ <span class="tag">&lt;Recip-List&gt;</span> <span class="desc">이메일 수신자 명단</span></li>
-                        </ul>
-                    </li>
-                    <li><strong><span class="tag">&lt;conditionObjects&gt;</span></strong> <span class="desc">(정책 조건 객체 - 핵심 정의 영역)</span>
-                        <ul>
-                            <li><strong>네트워크/인프라:</strong> <span class="tag">&lt;ipobject&gt;</span>, <span class="tag">&lt;host-port&gt;</span>, <span class="tag">&lt;protocol&gt;</span></li>
-                            <li><strong>웹/앱 카테고리:</strong>
+                            <li><span class="tag">&lt;ipobject&gt;</span> <span class="attr">name=<span class="attr-val">"IP객체명"</span></span> <span class="attr">type=<span class="attr-val">"1(Src)/2(Dst)"</span></span> <span class="attr">value=<span class="attr-val">"IP주소/서브넷"</span></span> <span class="attr">single=<span class="attr-val">"true/false"</span></span></li>
+                            <li><span class="tag">&lt;host-port&gt;</span> <span class="attr">name=<span class="attr-val">"호스트포트명"</span></span> <span class="attr">h=<span class="attr-val">"호스트"</span></span> <span class="attr">p=<span class="attr-val">"포트번호"</span></span></li>
+                            <li><span class="tag">&lt;af-host&gt;</span> <span class="attr">name=<span class="attr-val">"AF호스트명"</span></span>
                                 <ul>
-                                    <li><span class="tag">&lt;vpm-cat&gt;</span> ➔ <span class="tag">&lt;node&gt;</span>, <span class="tag">&lt;child&gt;</span></li>
-                                    <li><span class="tag">&lt;categorylist4&gt;</span> ➔ <span class="tag">&lt;sel&gt;</span>, <span class="tag">&lt;i&gt;</span>, <span class="tag">&lt;excl&gt;</span></li>
-                                    <li><span class="tag">&lt;app-url&gt;</span> ➔ <span class="tag">&lt;selected-applications&gt;</span></li>
+                                    <li><span class="tag">&lt;h&gt;</span> <span class="desc">상세 호스트 주소</span></li>
                                 </ul>
                             </li>
-                            <li><strong>요청/응답 상세:</strong> <span class="tag">&lt;a-url&gt;</span>, <span class="tag">&lt;op-url&gt;</span>, <span class="tag">&lt;user-agent-list&gt;</span>, <span class="tag">&lt;hdr-obj&gt;</span></li>
-                            <li><strong>보안 및 제어:</strong> <span class="tag">&lt;ssl-fwd-prxy&gt;</span>, <span class="tag">&lt;svr-cert&gt;</span>, <span class="tag">&lt;file-download&gt;</span></li>
-                            <li><strong>복합 객체:</strong> <span class="tag">&lt;comb-obj&gt;</span> ➔ <span class="tag">&lt;c-l-1&gt;</span>, <span class="tag">&lt;c-l-2&gt;</span> <span class="desc">(여러 조건을 하나로 결합)</span></li>
-                        </ul>
-                    </li>
-                    <li><strong><span class="tag">&lt;configObjects&gt;</span></strong> <span class="desc">환경 설정 객체 (예: dns-rdns)</span></li>
-                    <li><strong><span class="tag">&lt;layers&gt;</span></strong> <span class="desc">(정책 실행 계층)</span>
-                        <ul>
-                            <li><span class="tag">&lt;layer&gt;</span> <span class="desc">(개별 정책 테이블)</span>
+
+                            <li><span class="tag">&lt;time&gt;</span> <span class="attr">name=<span class="attr-val">"시간명"</span></span> <span class="attr">UTC=<span class="attr-val">"false"</span></span> <span class="attr">time=<span class="attr-val">"0000..2359"</span></span></li>
+                            <li><span class="tag">&lt;comb-obj&gt;</span> <span class="attr">name=<span class="attr-val">"복합객체명"</span></span> <span class="attr">t=<span class="attr-val">"1(AND)/2(OR)"</span></span> <span class="attr">n-1=<span class="attr-val">"부정여부"</span></span> <span class="attr">n-2=<span class="attr-val">"부정여부"</span></span>
                                 <ul>
-                                    <li><span class="tag">&lt;name&gt;</span> / <span class="tag">&lt;numRows&gt;</span></li>
-                                    <li><span class="tag">&lt;rowItem&gt;</span> <span class="desc">(개별 규칙)</span>
+                                    <li><span class="tag">&lt;c-l-1&gt;</span> <span class="attr">n=<span class="attr-val">"조건1이름"</span></span> <span class="desc">첫 번째 묶음</span></li>
+                                    <li><span class="tag">&lt;c-l-2&gt;</span> <span class="attr">n=<span class="attr-val">"조건2이름"</span></span> <span class="desc">두 번째 묶음</span></li>
+                                </ul>
+                            </li>
+
+                            <li><span class="tag">&lt;vpm-cat&gt;</span>
+                                <ul>
+                                    <li><span class="tag">&lt;node&gt;</span> <span class="attr">n=<span class="attr-val">"카테고리명"</span></span> <span class="attr">u-l=<span class="attr-val">"도메인목록"</span></span></li>
+                                </ul>
+                            </li>
+                            <li><span class="tag">&lt;categorylist4&gt;</span> <span class="attr">name=<span class="attr-val">"리스트명"</span></span>
+                                <ul>
+                                    <li><span class="tag">&lt;sel&gt;</span> <span class="desc">선택된 카테고리</span>
                                         <ul>
-                                            <li><span class="tag">&lt;colItem&gt;</span>, <span class="tag">&lt;colItemV2&gt;</span> <span class="desc">(규칙의 각 열: Source, Dest, Action 등)</span></li>
+                                            <li><span class="tag">&lt;i&gt;</span> <span class="desc">개별 항목</span></li>
+                                            <li><span class="tag">&lt;ai&gt;</span> <span class="attr">a=<span class="attr-val">"ID"</span></span> <span class="attr">n=<span class="attr-val">"내장이름"</span></span></li>
+                                        </ul>
+                                    </li>
+                                    <li><span class="tag">&lt;excl&gt;</span> <span class="desc">제외된 카테고리</span></li>
+                                    <li><span class="tag">&lt;sel-p&gt;</span> <span class="desc">부모 카테고리 선택</span></li>
+                                </ul>
+                            </li>
+                            <li><span class="tag">&lt;a-url&gt;</span> <span class="attr">name=<span class="attr-val">"URL명"</span></span> <span class="attr">r=<span class="attr-val">"정규표현식"</span></span> <span class="attr">typ=<span class="attr-val">"r"</span></span></li>
+                            <li><span class="tag">&lt;app-url&gt;</span> <span class="attr">name=<span class="attr-val">"App이름"</span></span>
+                                <ul>
+                                    <li><span class="tag">&lt;selected-applications&gt;</span> <span class="desc">선택된 앱 목록</span></li>
+                                </ul>
+                            </li>
+                            <li><span class="tag">&lt;op-url&gt;</span> <span class="attr">name=<span class="attr-val">"Operation명"</span></span>
+                                <ul>
+                                    <li><span class="tag">&lt;selected-operations&gt;</span>
+                                        <ul>
+                                            <li><span class="tag">&lt;item&gt;</span> <span class="desc">세부 동작(예: facebook_login)</span></li>
                                         </ul>
                                     </li>
                                 </ul>
                             </li>
-                            <li><span class="tag">&lt;raw-cpl&gt;</span> <span class="desc">직접 작성한 CPL(Content Policy Language) 코드</span></li>
+
+                            <li><span class="tag">&lt;protocol&gt;</span> <span class="attr">name=<span class="attr-val">"프로토콜명"</span></span> <span class="attr">proto=<span class="attr-val">"HTTP/HTTPS/FTP 등"</span></span></li>
+                            <li><span class="tag">&lt;prot-meth&gt;</span> <span class="attr">name=<span class="attr-val">"메서드명"</span></span> <span class="attr">method=<span class="attr-val">"GET/POST 등"</span></span></li>
+                            <li><span class="tag">&lt;svc-name&gt;</span> <span class="attr">name=<span class="attr-val">"서비스명"</span></span> <span class="attr">service=<span class="attr-val">"정의된서비스"</span></span></li>
+                            <li><span class="tag">&lt;user-agent-list&gt;</span> <span class="attr">name=<span class="attr-val">"UA리스트명"</span></span>
+                                <ul>
+                                    <li><span class="tag">&lt;user-agent-item&gt;</span> <span class="attr">regex=<span class="attr-val">"패턴"</span></span></li>
+                                </ul>
+                            </li>
+                            <li><span class="tag">&lt;hdr-obj&gt;</span> <span class="attr">name=<span class="attr-val">"헤더객체명"</span></span> <span class="attr">header=<span class="attr-val">"헤더명"</span></span> <span class="attr">regex=<span class="attr-val">"정규식"</span></span></li>
+                            <li><span class="tag">&lt;hdr-act&gt;</span> <span class="attr">name=<span class="attr-val">"헤더동작명"</span></span> <span class="attr">action=<span class="attr-val">"add/remove"</span></span></li>
+                            <li><span class="tag">&lt;hdr-supp-list&gt;</span> <span class="attr">name=<span class="attr-val">"지원헤더목록"</span></span>
+                                <ul>
+                                    <li><span class="tag">&lt;i&gt;</span> <span class="desc">개별 헤더 항목</span></li>
+                                </ul>
+                            </li>
+                            <li><span class="tag">&lt;http-req-body&gt;</span> <span class="attr">name=<span class="attr-val">"요청본문명"</span></span> <span class="attr">max-size=<span class="attr-val">"용량(Byte)"</span></span></li>
+
+                            <li><span class="tag">&lt;file-download&gt;</span> <span class="attr">name=<span class="attr-val">"파일객체명"</span></span>
+                                <ul>
+                                    <li><span class="tag">&lt;file-type-info&gt;</span> <span class="attr">file-extension=<span class="attr-val">"ZIP"</span></span> <span class="attr">use-file-extension=<span class="attr-val">"true"</span></span></li>
+                                </ul>
+                            </li>
+                            <li><span class="tag">&lt;appar-data-type&gt;</span> <span class="attr">name=<span class="attr-val">"데이터타입명"</span></span>
+                                <ul>
+                                    <li><span class="tag">&lt;adt-info&gt;</span> <span class="attr">type=<span class="attr-val">"매직넘버/MIME"</span></span></li>
+                                </ul>
+                            </li>
+                            <li><span class="tag">&lt;scan&gt;</span> <span class="attr">name=<span class="attr-val">"스캔동작명"</span></span> <span class="attr">type=<span class="attr-val">"ICAP_Req/ICAP_Resp"</span></span></li>
+
+                            <li><span class="tag">&lt;ssl-fwd-prxy&gt;</span> <span class="attr">name=<span class="attr-val">"SSL프록시명"</span></span> <span class="attr">action=<span class="attr-val">"Intercept/Bypass"</span></span></li>
+                            <li><span class="tag">&lt;ssl-fwd-prxy522&gt;</span> <span class="attr">name=<span class="attr-val">"SSL프록시(버전업)"</span></span></li>
+                            <li><span class="tag">&lt;ssl-fwd-prxy-on-excep&gt;</span> <span class="attr">name=<span class="attr-val">"예외시SSL처리명"</span></span></li>
+                            <li><span class="tag">&lt;svr-cert-valdn&gt;</span> <span class="attr">name=<span class="attr-val">"인증서검증명"</span></span> <span class="attr">action=<span class="attr-val">"Verify/Ignore"</span></span></li>
+                            <li><span class="tag">&lt;disab_ssl_detect&gt;</span> <span class="attr">name=<span class="attr-val">"SSL탐지우회명"</span></span></li>
+                            <li><span class="tag">&lt;encrypted-tap&gt;</span> <span class="attr">name=<span class="attr-val">"암호화탭명"</span></span></li>
+                            <li><span class="tag">&lt;client-encrypted-tap&gt;</span> <span class="attr">name=<span class="attr-val">"클라이언트암호화탭명"</span></span></li>
+                            <li><span class="tag">&lt;group&gt;</span> <span class="attr">name=<span class="attr-val">"그룹명"</span></span> <span class="attr">type=<span class="attr-val">"LDAP/Local"</span></span></li>
+                            <li><span class="tag">&lt;adm-auth-obj&gt;</span> <span class="attr">name=<span class="attr-val">"관리자인증객체명"</span></span></li>
+                            <li><span class="tag">&lt;policy-id&gt;</span> <span class="attr">name=<span class="attr-val">"정책ID명"</span></span> <span class="attr">cmt=<span class="attr-val">"코멘트"</span></span></li>
+
+                            <li><span class="tag">&lt;im-alert&gt;</span> <span class="attr">name=<span class="attr-val">"IM알림명"</span></span></li>
+                            <li><span class="tag">&lt;im-msg-refl&gt;</span> <span class="attr">name=<span class="attr-val">"IM메시지반사명"</span></span></li>
+                            <li><span class="tag">&lt;bw-mgmt&gt;</span> <span class="attr">name=<span class="attr-val">"대역폭관리명"</span></span> <span class="attr">class=<span class="attr-val">"클래스명"</span></span></li>
+                            <li><span class="tag">&lt;dny-obj&gt;</span> <span class="attr">name=<span class="attr-val">"거부객체명"</span></span></li>
+                            <li><span class="tag">&lt;dny-exc&gt;</span> <span class="attr">name=<span class="attr-val">"거부예외명"</span></span> <span class="attr">text=<span class="attr-val">"예외메시지"</span></span></li>
+                            <li><span class="tag">&lt;htm-ntfy&gt;</span> <span class="attr">name=<span class="attr-val">"HTML알림명"</span></span> <span class="attr">file=<span class="attr-val">"파일명"</span></span></li>
+                            <li><span class="tag">&lt;trace-obj&gt;</span> <span class="attr">name=<span class="attr-val">"추적객체명"</span></span></li>
+                            <li><span class="tag">&lt;acc-log-fac&gt;</span> <span class="attr">name=<span class="attr-val">"접근로그시설명"</span></span></li>
+                            <li><span class="tag">&lt;Process-Request&gt;</span> <span class="attr">name=<span class="attr-val">"요청프로세스명"</span></span></li>
+                            <li><span class="tag">&lt;guard&gt;</span> <span class="attr">name=<span class="attr-val">"가드명"</span></span> <span class="desc">특정 보호 기능</span></li>
                         </ul>
                     </li>
+
+                    <li class="group-title">▼ 글로벌 설정부 (configObjects)</li>
+                    <li><span class="tag">&lt;configObjects&gt;</span>
+                        <ul>
+                            <li><span class="tag">&lt;dns-rdns&gt;</span> <span class="attr">name=<span class="attr-val">"DNS설정명"</span></span></li>
+                        </ul>
+                    </li>
+
+                    <li class="group-title">▼ 정책 실행부 (layers)</li>
+                    <li><span class="tag">&lt;layers&gt;</span>
+                        <ul>
+                            <li><span class="tag">&lt;layer&gt;</span> <span class="attr">layertype=<span class="attr-val">"WebAccessPolicyTable 등"</span></span> <span class="attr">disabled=<span class="attr-val">"true/false"</span></span>
+                                <ul>
+                                    <li><span class="tag">&lt;name&gt;</span> <span class="desc">레이어 이름</span></li>
+                                    <li><span class="tag">&lt;numRows&gt;</span> <span class="desc">전체 규칙 수</span></li>
+                                    <li><span class="tag">&lt;rowItem&gt;</span> <span class="attr">num=<span class="attr-val">"순서"</span></span> <span class="attr">enabled=<span class="attr-val">"true/false"</span></span>
+                                        <ul>
+                                            <li><span class="tag">&lt;colItem&gt;</span> <span class="desc">기본 속성(아래 상세 참조)</span>
+                                                <br>&nbsp;&nbsp;↳ <span class="attr">col=<span class="attr-val">"열번호(0~7)"</span></span>
+                                                <br>&nbsp;&nbsp;↳ <span class="attr">id=<span class="attr-val">"구분(no, so, de, se, ac, ti, co, tr, ep)"</span></span>
+                                                <br>&nbsp;&nbsp;↳ <span class="attr">name=<span class="attr-val">"조건객체명/문자열"</span></span>
+                                                <br>&nbsp;&nbsp;↳ <span class="attr">negate=<span class="attr-val">"true/false(부정여부)"</span></span>
+                                                <br>&nbsp;&nbsp;↳ <span class="attr">type=<span class="attr-val">"Condition/String"</span></span>
+                                                <br>&nbsp;&nbsp;↳ <span class="attr">value=<span class="attr-val">"값(no일경우 순번)"</span></span>
+                                            </li>
+                                            <li><span class="tag">&lt;colItemV2&gt;</span> <span class="desc">확장된 속성 (colItem과 동일한 구조 + 추가 메타데이터)</span></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><span class="tag">&lt;raw-cpl&gt;</span> <span class="desc">사용자가 직접 작성한 CPL 코드 블록</span></li>
+                        </ul>
+                    </li>
+
                 </ul>
             </li>
         </ul>
-    </div>
-
-    <h2>2. 주요 항목별 상세 역할 표</h2>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 15%;">구분</th>
-                <th style="width: 35%;">XML 태그 (항목)</th>
-                <th style="width: 50%;">상세 역할 설명</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>시스템/버전</strong></td>
-                <td><span class="tag">&lt;vpmxml-info&gt;</span>, <span class="tag">&lt;enforcement-point&gt;</span></td>
-                <td>XML의 생성 정보와 이 정책이 현재 장비에 적용 중인지를 나타냅니다.</td>
-            </tr>
-            <tr>
-                <td><strong>파일/이메일</strong></td>
-                <td><span class="tag">&lt;Known-File-Ext&gt;</span>, <span class="tag">&lt;Known-Recip-Lists&gt;</span></td>
-                <td>자주 사용하는 파일 확장자 그룹과 경고 메시지를 보낼 이메일 주소 그룹을 정의합니다.</td>
-            </tr>
-            <tr>
-                <td><strong>URL/카테고리</strong></td>
-                <td><span class="tag">&lt;vpm-cat&gt;</span>, <span class="tag">&lt;categorylist4&gt;</span>, <span class="tag">&lt;a-url&gt;</span></td>
-                <td>접속 허용/차단 대상이 되는 URL 주소, 카테고리, 그리고 그 안의 세부 동작을 정의합니다.</td>
-            </tr>
-            <tr>
-                <td><strong>애플리케이션</strong></td>
-                <td><span class="tag">&lt;app-url&gt;</span>, <span class="tag">&lt;selected-applications&gt;</span></td>
-                <td>Facebook, YouTube 등 특정 웹 앱 기반의 정밀한 제어 조건을 설정합니다.</td>
-            </tr>
-            <tr>
-                <td><strong>네트워크 조건</strong></td>
-                <td><span class="tag">&lt;ipobject&gt;</span>, <span class="tag">&lt;host-port&gt;</span>, <span class="tag">&lt;protocol&gt;</span></td>
-                <td>IP 주소, 포트 번호, 사용 프로토콜 및 정책이 적용될 시간 범위를 설정합니다.</td>
-            </tr>
-            <tr>
-                <td><strong>HTTP 헤더/동작</strong></td>
-                <td><span class="tag">&lt;hdr-obj&gt;</span>, <span class="tag">&lt;user-agent-list&gt;</span></td>
-                <td>HTTP 헤더 값(Referer 등)을 검사/수정하고 브라우저 종류에 따른 필터링을 수행합니다.</td>
-            </tr>
-            <tr>
-                <td><strong>SSL/인증서</strong></td>
-                <td><span class="tag">&lt;ssl-fwd-prxy&gt;</span>, <span class="tag">&lt;svr-cert-valdn&gt;</span></td>
-                <td>암호화된 트래픽(HTTPS)의 복호화 검사 여부와 서버 인증서의 유효성을 검사합니다.</td>
-            </tr>
-            <tr>
-                <td><strong>파일 제어</strong></td>
-                <td><span class="tag">&lt;file-download&gt;</span>, <span class="tag">&lt;appar-data-type&gt;</span></td>
-                <td>실제 다운로드되는 파일의 내용(Magic Number 등)을 분석하여 차단 여부를 결정합니다.</td>
-            </tr>
-            <tr>
-                <td><strong>복합 객체</strong></td>
-                <td><span class="tag">&lt;comb-obj&gt;</span>, <span class="tag">&lt;c-l-1&gt;</span>, <span class="tag">&lt;c-l-2&gt;</span></td>
-                <td>"특정 시간 + 특정 그룹 + 특정 사이트"처럼 여러 조건을 AND/OR로 조합합니다.</td>
-            </tr>
-            <tr>
-                <td><strong>정책 실행</strong></td>
-                <td><span class="tag">&lt;layer&gt;</span>, <span class="tag">&lt;rowItem&gt;</span>, <span class="tag">&lt;colItem&gt;</span></td>
-                <td><strong>최종 실행 단계.</strong> 정의된 모든 객체를 조합하여 '누가 어디를 갈 때 어떻게 할지' 결정합니다.</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <h2>3. 관계성 요약</h2>
-    <div class="summary-box">
-        <h3>💡 VPM XML의 핵심 동작 원리</h3>
-        <p><strong>1. 정의부 (<span class="tag">&lt;conditionObjects&gt;</span> 등):</strong><br>
-        모든 재료(대상, 시간, 앱, 확장자 등)를 태그별로 잘게 쪼개어 정의합니다. 특히 <span class="tag">&lt;comb-obj&gt;</span>는 작은 태그들을 묶어서 더 큰 조건을 만드는 역할을 합니다.</p>
-        
-        <p><strong>2. 참조부 (<span class="tag">&lt;layer&gt;</span>):</strong><br>
-        정의된 재료들을 불러와서 실제 규칙(<span class="tag">&lt;rowItem&gt;</span>)을 만듭니다. 이때 <span class="tag">&lt;colItem&gt;</span> 태그가 앞서 정의된 객체들의 ID나 이름을 참조하여 서로를 연결(Mapping)합니다.</p>
-
-        <p><strong>3. 최종 결과:</strong><br>
-        사용자가 네트워크 접속을 시도하면, <span class="tag">&lt;layers&gt;</span>에 있는 규칙들을 최상단부터 순차적으로(Top-Down) 검사하여 조건이 일치하는 규칙의 동작(Action)을 수행합니다.</p>
     </div>
 
 </body>

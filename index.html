@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ProxySG 정책 XML & Converter</title>
+  <title>ProxySG 정책 XML</title>
 <style>
   .container {
     background:#fff; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,0.08);
@@ -559,22 +559,96 @@ userstory.net</pre></details></span>
         </li>
         
         <li>
-          <details class="tree-node depth-2">
-            <summary>
-              <span class="tag">&lt;dny-exc&gt; 등 기타 제어 객체</span>
-              <span class="desc">추가적인 VPM 제어 요소들</span>
-            </summary>
-            <div class="node-body">
-              <div class="text-ex">
-                <span class="eg"><code>&lt;dny-exc&gt;</code></span>
-                <span class="eg"><code>&lt;user-agent-list&gt;</code></span>
-                <span class="eg"><code>&lt;svr-cert-valdn&gt;</code></span>
-                <span class="eg"><code>&lt;ssl-fwd-prxy&gt;</code></span>
-                <span class="eg"><code>&lt;bw-mgmt&gt;</code></span>
-                <span class="eg"><code>&lt;trace-obj&gt;</code></span>
+        <details class="tree-node depth-2" id="vpmapp-conditionObjects-user-agent-list">
+          <summary><span class="tag">&lt;user-agent-list&gt;</span><span class="desc">User-Agent 목록</span></summary>
+          <div class="node-body">
+            <table class="attr-table"><thead><tr><th>속성</th><th>예제 값</th></tr></thead><tbody><tr><th>name</th><td><span class="eg"><code>IE Agent</code></span> <span class="eg"><code>TEST_Agent</code></span></td></tr></tbody></table>
+            <ul><li>
+            <details class="tree-node depth-3">
+              <summary><span class="tag">&lt;user-agent-item&gt;</span><span class="desc">User-Agent 개별 항목</span></summary>
+              <div class="node-body">
+                <table class="attr-table"><thead><tr><th>속성</th><th>예제 값</th></tr></thead><tbody>
+                  <tr><th>name</th><td><span class="eg"><code>User_Agent</code></span></td></tr>
+                  <tr><th>description</th><td><span class="eg"><code>MS Internet Explorer (all)</code></span></td></tr>
+                  <tr><th>user-agent-regex</th><td><span class="eg"><code>MS Internet Explorer (all)</code></span></td></tr>
+                </tbody></table>
               </div>
-            </div>
-          </details>
+            </details>
+            </li></ul>
+          </div>
+        </details>
+        </li>
+
+        <li>
+        <details class="tree-node depth-2" id="vpmapp-conditionObjects-svr-cert-valdn">
+          <summary><span class="tag">&lt;svr-cert-valdn&gt;</span><span class="desc">서버 인증서 검증 설정</span></summary>
+          <div class="node-body">
+            <table class="attr-table"><thead><tr><th>속성</th><th>예제 값</th></tr></thead><tbody>
+              <tr><th>name</th><td><span class="eg"><code>ServerCertValidation</code></span></td></tr>
+              <tr><th>vldtn</th><td><span class="eg"><code>true</code></span> <span class="eg"><code>false</code></span></td></tr>
+              <tr><th>c-rvk</th><td><span class="eg"><code>false</code></span></td></tr>
+              <tr><th>cert-rvc</th><td><span class="eg"><code>no</code></span></td></tr>
+              <tr><th>i-exp, i-hm, i-untr-u</th><td><span class="eg"><code>true</code></span></td></tr>
+            </tbody></table>
+          </div>
+        </details>
+        </li>
+
+        <li>
+        <details class="tree-node depth-2" id="vpmapp-conditionObjects-ssl-fwd-prxy">
+          <summary><span class="tag">&lt;ssl-fwd-prxy&gt; (및 522)</span><span class="desc">SSL 포워드 프록시 설정</span></summary>
+          <div class="node-body">
+            <table class="attr-table"><thead><tr><th>속성</th><th>예제 값</th></tr></thead><tbody>
+              <tr><th>name</th><td><span class="eg"><code>EnableHTTPSInterception</code></span></td></tr>
+              <tr><th>m</th><td><span class="eg"><code>fwd</code></span> <span class="eg"><code>no</code></span></td></tr>
+              <tr><th>k</th><td><span class="eg"><code>Cert_Test</code></span></td></tr>
+              <tr><th>on-exc</th><td><span class="eg"><code>false</code></span></td></tr>
+              <tr><th>ssl_type</th><td><span class="eg"><code>0</code></span></td></tr>
+            </tbody></table>
+          </div>
+        </details>
+        </li>
+
+        <li>
+        <details class="tree-node depth-2" id="vpmapp-conditionObjects-bw-mgmt">
+          <summary><span class="tag">&lt;bw-mgmt&gt;</span><span class="desc">대역폭 관리 객체</span></summary>
+          <div class="node-body">
+            <table class="attr-table"><thead><tr><th>속성</th><th>예제 값</th></tr></thead><tbody>
+              <tr><th>name</th><td><span class="eg"><code>Adobe_25M_out</code></span> <span class="eg"><code>Heavy_QoS_in</code></span></td></tr>
+              <tr><th>bwc</th><td><span class="eg"><code>25M</code></span> <span class="eg"><code>heavy_user</code></span></td></tr>
+              <tr><th>cs</th><td><span class="eg"><code>s</code></span></td></tr>
+              <tr><th>iob</th><td><span class="eg"><code>o</code></span> <span class="eg"><code>i</code></span></td></tr>
+            </tbody></table>
+          </div>
+        </details>
+        </li>
+
+        <li>
+        <details class="tree-node depth-2" id="vpmapp-conditionObjects-trace-obj">
+          <summary><span class="tag">&lt;trace-obj&gt;</span><span class="desc">추적/트레이스 객체</span></summary>
+          <div class="node-body">
+            <table class="attr-table"><thead><tr><th>속성</th><th>예제 값</th></tr></thead><tbody>
+              <tr><th>name</th><td><span class="eg"><code>CAS_ExceptionPage</code></span> <span class="eg"><code>Trace4</code></span></td></tr>
+              <tr><th>f</th><td><span class="eg"><code>test.htm</code></span> <span class="eg"><code>CAS_ExceptionPage.htm</code></span></td></tr>
+              <tr><th>rl</th><td><span class="eg"><code>trace-enabled</code></span></td></tr>
+            </tbody></table>
+          </div>
+        </details>
+        </li>
+
+        <li>
+        <details class="tree-node depth-2" id="vpmapp-conditionObjects-dny-exc">
+          <summary><span class="tag">&lt;dny-exc&gt;</span><span class="desc">차단 예외 객체</span></summary>
+          <div class="node-body">
+            <table class="attr-table"><thead><tr><th>속성</th><th>예제 값</th></tr></thead><tbody>
+              <tr><th>name</th><td><span class="eg"><code>SSL_Deny</code></span> <span class="eg"><code>Deny_69</code></span></td></tr>
+              <tr><th>e</th><td><span class="eg"><code>https_deny</code></span> <span class="eg"><code>deny_69</code></span></td></tr>
+              <tr><th>p</th><td><span class="eg"><code>userdefined</code></span> <span class="eg"><code>builtin</code></span></td></tr>
+              <tr><th>a, f</th><td><span class="eg"><code>false</code></span></td></tr>
+              <tr><th>m</th><td><span class="eg"><code>Your system policy has denied...</code></span></td></tr>
+            </tbody></table>
+          </div>
+        </details>
         </li>
         </ul>
           </div>
@@ -946,7 +1020,6 @@ function runConversion() {
 
           if (userCatName) deName = deName === "Any" ? userCatName : deName;
 
-          // web-category-id 가 있으면 목적지로 매핑하고 <node> 객체 생성
           if (webCatId) {
               deName = deName === "Any" ? webCatId : deName;
               if (webUrlList) {

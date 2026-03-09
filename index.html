@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ProxySG 정책 XML</title>
+  <title>ProxySG 정책 XML & Converter</title>
 <style>
   .container {
     background:#fff; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,0.08);
@@ -34,13 +34,12 @@
   .sub { color: var(--muted, #64748b); font-size: 15px; margin-bottom: 16px; }
   .stats { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
   .chip { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 600; color: #334155; }
-  .nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .nav a, .actions button {
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .actions button {
     text-decoration: none; color: var(--accent, #2563eb); background: #eff6ff;
     border: 1px solid #bfdbfe; border-radius: 6px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s;
   }
-  .nav a:hover, .actions button:hover { background: #dbeafe; }
-  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .actions button:hover { background: #dbeafe; }
   .actions button.primary-btn {
     background: var(--accent, #2563eb); color: #ffffff; border: 1px solid var(--accent, #2563eb);
     box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
@@ -48,15 +47,15 @@
   .actions button.primary-btn:hover { background: var(--accent-hover, #1d4ed8); }
 
   /* Tree Container */
-  .tree-panel { background: transparent; }
+  .tree-panel { background: transparent; padding-bottom: 40px; }
   .tree-root > details { margin-top: 0; }
-  details.tree-node { margin: 12px 0; }
+  details.tree-node { margin: 8px 0; }
 
   /* 공통 Summary 설정 */
   details.tree-node > summary {
     list-style: none; cursor: pointer; position: relative;
     display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease; z-index: 2;
   }
   details.tree-node > summary::-webkit-details-marker { display: none; }
   
@@ -76,22 +75,20 @@
   details.depth-0 > summary::before { left: 20px; border-color: #94a3b8; }
   details.depth-0 > summary .tag { background: #334155; color: #f8fafc; border: 1px solid #475569; font-size: 16px; }
   details.depth-0 > summary .desc { color: #cbd5e1; font-size: 15px; font-weight: 400; }
-  details.depth-0 > summary .meta { background: #475569; color: #e2e8f0; }
-  details.depth-0 > summary .path { color: #94a3b8; }
 
   /* 2. 주요 대항목 (Depth 1) */
   details.depth-1 > summary {
     background: #ffffff; border: 1px solid #cbd5e1; border-left: 6px solid #3b82f6;
-    border-radius: 8px; padding: 14px 16px 14px 40px; box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05)); margin-top: 16px;
+    border-radius: 8px; padding: 12px 16px 12px 40px; box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
   }
   details.depth-1 > summary:hover { background: #eff6ff; }
   details.depth-1 > summary::before { left: 16px; border-color: #3b82f6; }
-  details.depth-1 > summary .tag { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 15px; }
+  details.depth-1 > summary .tag { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
   /* 3. 세부항목 1단계 (Depth 2) */
   details.depth-2 > summary {
     background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid #8b5cf6;
-    border-radius: 6px; padding: 10px 14px 10px 36px; margin-top: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    border-radius: 6px; padding: 10px 14px 10px 36px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
   }
   details.depth-2 > summary:hover { background: #f5f3ff; }
   details.depth-2 > summary::before { left: 14px; border-color: #7c3aed; }
@@ -100,7 +97,7 @@
   /* 4. 세부항목 2단계 (Depth 3) */
   details.depth-3 > summary {
     background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #10b981;
-    border-radius: 6px; padding: 8px 12px 8px 32px; margin-top: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    border-radius: 6px; padding: 8px 12px 8px 32px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
   }
   details.depth-3 > summary:hover { background: #ecfdf5; }
   details.depth-3 > summary::before { left: 12px; border-color: #059669; }
@@ -109,7 +106,7 @@
   /* 5. 세부항목 3단계 (Depth 4) */
   details.depth-4 > summary {
     background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #f59e0b;
-    border-radius: 6px; padding: 8px 12px 8px 32px; margin-top: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    border-radius: 6px; padding: 8px 12px 8px 32px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);
   }
   details.depth-4 > summary:hover { background: #fffbeb; }
   details.depth-4 > summary::before { left: 12px; border-color: #d97706; }
@@ -120,26 +117,47 @@
   .tag { font-family: Consolas, Menlo, monospace; font-size: 14px; padding: 2px 8px; border-radius: 6px; font-weight: 700; }
   .desc { font-weight: 600; font-size: 14px; }
   .meta { font-size: 12px; color: var(--muted, #64748b); background: #e2e8f0; border-radius: 12px; padding: 2px 10px; margin-left: 8px; }
-  .path { font-size: 11px; color: #94a3b8; margin-left: auto; word-break: break-all; font-family: Consolas, monospace; }
 
-  /* 계층 구조 가이드라인 */
-  .node-body { margin-left: 18px; padding-left: 16px; border-left: 2px solid #e2e8f0; padding-top: 8px; padding-bottom: 8px; }
-  .depth-0 > .node-body { border-left: none; background: transparent; padding-left: 0; margin-left: 0; }
-  .depth-1 > .node-body { border-left-color: #bfdbfe; } 
-  .depth-2 > .node-body { border-left-color: #ddd6fe; } 
-  .depth-3 > .node-body { border-left-color: #a7f3d0; } 
-  .depth-4 > .node-body { border-left-color: #fde68a; } 
+  /* =========================================
+     [수정됨] 계층 구조 가이드라인 (트리 선)
+     ========================================= */
+  .node-body { 
+    margin-left: 22px; /* 부모로부터의 들여쓰기 간격 */
+    padding-left: 24px; 
+    border-left: 2px solid #e2e8f0; /* 세로선 */
+    padding-top: 4px; 
+    padding-bottom: 4px; 
+  }
+  
+  /* Depth 0 (vpmapp) 아래의 항목도 정상적으로 들여쓰기 되도록 복구 */
+  .depth-0 > .node-body { border-left: 2px dashed #94a3b8; } 
+  .depth-1 > .node-body { border-left: 2px solid #bfdbfe; } 
+  .depth-2 > .node-body { border-left: 2px solid #ddd6fe; } 
+  .depth-3 > .node-body { border-left: 2px solid #a7f3d0; } 
+  .depth-4 > .node-body { border-left: 2px solid #fde68a; } 
   
   .node-body > ul { list-style: none; margin: 0; padding: 0; }
-  .node-body > ul > li { position: relative; }
+  .node-body > ul > li { position: relative; margin-top: 6px; margin-bottom: 6px; }
+  
+  /* 가로 연결선 (ㄱ자 모양 형성) */
+  .node-body > ul > li::before {
+    content: ""; position: absolute; left: -24px; top: 22px; width: 18px;
+    border-top: 2px solid #e2e8f0; z-index: 1;
+  }
+  .depth-0 > .node-body > ul > li::before { border-top: 2px dashed #94a3b8; }
+  .depth-1 > .node-body > ul > li::before { border-top: 2px solid #bfdbfe; }
+  .depth-2 > .node-body > ul > li::before { border-top: 2px solid #ddd6fe; }
+  .depth-3 > .node-body > ul > li::before { border-top: 2px solid #a7f3d0; }
+  
+  /* ========================================= */
   
   /* 속성 테이블 */
   .attr-table {
-    width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 13px;
+    width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 13px;
     background: var(--panel, #ffffff); border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02); position: relative; z-index: 2;
   }
-  .attr-table th, .attr-table td { border-bottom: 1px solid #f1f5f9; padding: 10px 14px; vertical-align: top; text-align: left; }
+  .attr-table th, .attr-table td { border-bottom: 1px solid #f1f5f9; padding: 8px 14px; vertical-align: top; text-align: left; }
   .attr-table th { width: 22%; color: #475569; background: #f8fafc; font-family: Consolas, Menlo, monospace; font-weight: 700; border-right: 1px solid #f1f5f9;}
   .attr-table td { width: 78%; }
 
@@ -163,11 +181,10 @@
     padding: 12px; max-height: 200px; overflow: auto; font-family: Consolas, Menlo, monospace; font-size: 12px;
   }
 
-  .text-ex { margin: 10px 0 12px; padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; }
+  .text-ex { margin: 10px 0 12px; padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; position: relative; z-index: 2; }
   .label { font-weight: 700; color: #475569; margin-right: 8px; font-size: 12px; text-transform: uppercase; }
 
   @media (max-width: 900px) {
-    .path { width: 100%; margin-left: 0; padding-left: 20px;}
     .attr-table th, .attr-table td { display: block; width: 100%; border-right: none; }
     .attr-table th { padding-bottom: 4px; border-bottom: none; }
   }
@@ -224,7 +241,6 @@
   .badge-somansa { background: #fce7f3; color: #be123c; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
   .badge-symantec { background: #e0e7ff; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
 
-  /* 버튼 UI (Header 위치용) */
   .btn-convert {
     background: var(--accent, #2563eb); color: white; border: none;
     padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px;
@@ -309,11 +325,11 @@
           <summary>
             <span class="tag">&lt;vpmapp&gt;</span>
             <span class="desc">VPM 정책 XML의 최상위 루트</span>
-            <span class="path">vpmapp</span>
           </summary>
           <div class="node-body">
-            
-            <ul><li>
+            <ul>
+                
+        <li>
         <details class="tree-node depth-1" id="vpmapp-vpmxml-info" open="">
           <summary>
             <span class="tag">&lt;vpmxml-info&gt;</span>
@@ -323,7 +339,9 @@
             <table class="attr-table"><thead><tr><th>속성</th><th>예제 값</th></tr></thead><tbody><tr><th>version</th><td><span class="eg"><code>631</code></span></td></tr></tbody></table>
           </div>
         </details>
-        </li><li>
+        </li>
+        
+        <li>
         <details class="tree-node depth-1" id="vpmapp-enforcement-point" open="">
           <summary>
             <span class="tag">&lt;enforcement-point&gt;</span>
@@ -333,22 +351,24 @@
             <table class="attr-table"><thead><tr><th>속성</th><th>예제 값</th></tr></thead><tbody><tr><th>enabled</th><td><span class="eg"><code>false</code></span></td></tr></tbody></table>
           </div>
         </details>
-        </li><li>
+        </li>
+        
+        <li>
         <details class="tree-node depth-1" id="vpmapp-conditionObjects" open="">
           <summary>
             <span class="tag">&lt;conditionObjects&gt;</span>
             <span class="desc">정책에서 참조하는 조건/객체 모음</span>
           </summary>
           <div class="node-body">
-            
-            <ul><li>
+            <ul>
+                
+        <li>
         <details class="tree-node depth-2" id="vpmapp-conditionObjects-vpm-cat" open="">
           <summary>
             <span class="tag">&lt;vpm-cat&gt;</span>
             <span class="desc">정책 카테고리 트리 정의</span>
           </summary>
           <div class="node-body">
-            
             <ul><li>
         <details class="tree-node depth-3" id="vpmapp-conditionObjects-vpm-cat-node" open="">
           <summary>
@@ -373,7 +393,9 @@ userstory.net</pre></details></span>
         </li></ul>
           </div>
         </details>
-        </li><li>
+        </li>
+        
+        <li>
         <details class="tree-node depth-2" id="vpmapp-conditionObjects-ipobject" open="">
           <summary>
             <span class="tag">&lt;ipobject&gt;</span>
@@ -388,7 +410,9 @@ userstory.net</pre></details></span>
             </tbody></table>
           </div>
         </details>
-        </li><li>
+        </li>
+        
+        <li>
         <details class="tree-node depth-2" id="vpmapp-conditionObjects-comb-obj" open="">
           <summary>
             <span class="tag">&lt;comb-obj&gt;</span>
@@ -424,7 +448,9 @@ userstory.net</pre></details></span>
         </li></ul>
           </div>
         </details>
-        </li><li>
+        </li>
+        
+        <li>
         <details class="tree-node depth-2" id="vpmapp-conditionObjects-categorylist4">
           <summary>
             <span class="tag">&lt;categorylist4&gt;</span>
@@ -465,7 +491,9 @@ userstory.net</pre></details></span>
         </li></ul>
           </div>
         </details>
-        </li><li>
+        </li>
+        
+        <li>
         <details class="tree-node depth-2" id="vpmapp-conditionObjects-a-url">
           <summary>
             <span class="tag">&lt;a-url&gt;</span>
@@ -481,7 +509,9 @@ userstory.net</pre></details></span>
             </tbody></table>
           </div>
         </details>
-        </li><li>
+        </li>
+        
+        <li>
         <details class="tree-node depth-2" id="vpmapp-conditionObjects-hdr-obj">
           <summary>
             <span class="tag">&lt;hdr-obj&gt;</span>
@@ -494,7 +524,9 @@ userstory.net</pre></details></span>
             </tbody></table>
           </div>
         </details>
-        </li><li>
+        </li>
+        
+        <li>
         <details class="tree-node depth-2" id="vpmapp-conditionObjects-time">
           <summary>
             <span class="tag">&lt;time&gt;</span>
@@ -507,7 +539,9 @@ userstory.net</pre></details></span>
             </tbody></table>
           </div>
         </details>
-        </li><li>
+        </li>
+        
+        <li>
         <details class="tree-node depth-2" id="vpmapp-conditionObjects-file-download">
           <summary>
             <span class="tag">&lt;file-download&gt;</span>
@@ -531,7 +565,9 @@ userstory.net</pre></details></span>
         </li></ul>
           </div>
         </details>
-        </li><li>
+        </li>
+        
+        <li>
         <details class="tree-node depth-2" id="vpmapp-conditionObjects-htm-ntfy">
           <summary>
             <span class="tag">&lt;htm-ntfy&gt;</span>
@@ -650,17 +686,19 @@ userstory.net</pre></details></span>
           </div>
         </details>
         </li>
+
         </ul>
           </div>
         </details>
-        </li><li>
+        </li>
+        
+        <li>
         <details class="tree-node depth-1" id="vpmapp-layers" open="">
           <summary>
             <span class="tag">&lt;layers&gt;</span>
             <span class="desc">정책 레이어 목록</span>
           </summary>
           <div class="node-body">
-            
             <ul><li>
         <details class="tree-node depth-2" id="vpmapp-layers-layer" open="">
           <summary>

@@ -805,57 +805,57 @@ client.address=1.1.1.1 detect_protocol (no) allow
 [객체 예시 - 다중 URL]
 <NetAPP>
 define NetAppcategory &quot;이름&quot;
-url1
-url2
+  url1
+  url2
 end NetAppcategory &quot;이름&quot;
 <NetAPP/>
 
 [객체 예시 - 단일 URL/URI]
 <userdefinedurl>
 define webcategory &quot;단일이름&quot;
-test.com/path
+  test.com/path
 end webcategory &quot;단일이름&quot;
 </userdefinedurl>
 
 [객체 예시 - IP]
 <Target>
 define Target &quot;이름&quot;
-1.1.1.1 all
-2.2.2.2 all
+  1.1.1.1 all
+  2.2.2.2 all
 end Target &quot;이름&quot;
 <Target/>
 
 [정책 예시 - TLS]
 <TLS-Policy>
 define Policy &quot;TLS이름&quot;
-policy
-name=TLS이름 prioirty=1 activated=사용 desc=설명
-policy/
-rule
-address direction=inbound
-adress name=1.1.1.1
-rule/
+  policy
+    name=TLS이름 prioirty=1 activated=사용 desc=설명
+  policy/
+  rule
+    address direction=inbound
+    adress name=1.1.1.1
+  rule/
 end policy &quot;TLS이름&quot;
 <TLS-Policy/>
 
 [정책 예시 - HTTP]
 <HTTP-Policy>
 define Policy &quot;HTTP이름&quot;
-policy
-name=HTTP이름 prioirty=2 activated=사용 desc=HTTP설명
-policy/
-rule
-http-type=request
-address direction=outbound
-adress name=2.2.2.2
-userDefinedCategory name=카테고리이름
-web-category-id value=신규카테고리
-webUrlList: url1, url2
-rule/
-actions
-action value=차단
-block-message value=차단안내페이지
-actions/
+  policy
+    name=HTTP이름 prioirty=2 activated=사용 desc=HTTP설명
+  policy/
+  rule
+    http-type=request
+    address direction=outbound
+      adress name=2.2.2.2
+    userDefinedCategory name=카테고리이름
+    web-category-id value=신규카테고리
+      webUrlList: url1, url2
+  rule/
+  actions
+    action value=차단
+    block-message value=차단안내페이지
+  actions/
 end policy &quot;HTTP이름&quot;
 <HTTP-Policy/>"></textarea>
           </div>

@@ -1016,8 +1016,6 @@ end policy &quot;HTTP이름&quot;
                         <span style="font-size:0.8rem; font-weight:bold; color:#475569;">Filter:</span>
                         <ul class="filter-tabs" id="objTypeTabs">
                             <li><a class="nav-link active" onclick="setBasicObjFilter('All', this)">All</a></li>
-                            <li><a class="nav-link" onclick="setBasicObjFilter('URL List', this)">URL List</a></li>
-                            <li><a class="nav-link" onclick="setBasicObjFilter('IP', this)">IP Address</a></li>
                         </ul>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
@@ -1765,7 +1763,7 @@ function renderPolicyLayer() {
     }
 }
 
-// 4. Policy 셀 클릭 시 드롭다운 띄우기 기능 완벽 적용
+// 4. Policy 셀 클릭 시 조건별 드롭다운 띄우기 로직
 function renderStandardTable(rows, table) {
     const tbody = table.querySelector("tbody"); const thead = table.querySelector("thead");
     const knownCols = {'no':'No.', 'so':'Source', 'de':'Destination', 'se':'Service', 'ac':'Action', 'tr':'Track', 'ep':'Target', 'ti':'Time', 'co':'Comment'};
@@ -1780,6 +1778,7 @@ function renderStandardTable(rows, table) {
         tr.addEventListener('contextmenu', function(e) { e.preventDefault(); contextMenuTargetRowIndex = i; contextMenuTargetRowElement = row; const cm = document.getElementById("policyContextMenu"); cm.style.display = 'block'; cm.style.left = e.pageX + 'px'; cm.style.top = e.pageY + 'px'; });
         
         let colData = {}; for(let c of row.getElementsByTagName("colItem")) colData[c.getAttribute("id")] = c.getAttribute("name");
+        
         finalColOrder.forEach(id => {
             let td = document.createElement("td");
             if(id === 'no') { 
@@ -1789,7 +1788,7 @@ function renderStandardTable(rows, table) {
                 td.innerText = cellVal; 
                 if(!colData[id]) td.style.color="#94a3b8"; 
                 
-                // [클릭 이벤트] 객체 선택 드롭다운 또는 텍스트 인풋 생성
+                // [클릭 이벤트] 객체 선택 드롭다운 생성 (조건에 따른 필터링 적용)
                 td.onclick = function(e) {
                     if(this.querySelector("input") || this.querySelector("select")) return;
                     let currVal = this.innerText === "-" ? "" : this.innerText;
@@ -1813,14 +1812,45 @@ function renderStandardTable(rows, table) {
                         else if(id==='ep') defaults = ['Appliance', 'WSS'];
                         else defaults = ['Any']; // so, de, se, ti
                         
+                        // ===== 항목별 허용 객체(Type) 매핑 로직 =====
+                        let validTypes = [];
+                        if (id === 'so') validTypes = ['ip', 'group', 'hdr-act', 'hdr-obj', 'http-req-body', 'appar-data-type', 'user-agent-list', 'combined'];
+                        else if (id === 'de') validTypes = ['ip', 'url list', 'a-url', 'app-url', 'appar-data-type', 'categorylist4', 'file-download', 'host-port', 'op-url', 'combined'];
+                        else if (id === 'se') validTypes = ['prot-meth', 'protocol', 'svc-name', 'combined'];
+                        else if (id === 'ti') validTypes = ['time'];
+                        else if (id === 'tr') validTypes = ['trace-obj'];
+                        else if (id === 'ac') {
+                            const curLayer = xmlDoc.getElementsByTagName("layer")[currentLayerIndex];
+                            const lType = curLayer.getAttribute("layertype") || "";
+                            
+                            // 공통 Action 허용 객체
+                            validTypes = ['acc-log-fac', 'bw-mgmt', 'dny-exc', 'dny-obj', 'htm-ntfy'];
+                            
+                            // Layer별 특수 Action 객체 허용
+                            if (lType.includes("AdminAuthentication")) validTypes.push('adm-auth-obj');
+                            else if (lType.includes("WebContent")) validTypes.push('scan', 'process-request');
+                            else if (lType.includes("SSLIntercept")) validTypes.push('ssl-fwd-prxy', 'ssl-fwd-prxy522');
+                            else if (lType.includes("SSLAccess")) validTypes.push('svr-cert-valdn', 'client-encrypted-tap');
+                        }
+
                         let html = '';
+                        // 1. 기본 옵션 세팅 (Any, Allow, Deny 등)
                         defaults.forEach(d => html += `<option value="${d}" ${currVal===d?'selected':''}>${d}</option>`);
-                        globalObjectNames.forEach(obj => {
-                            if(!defaults.includes(obj)) html += `<option value="${obj}" ${currVal===obj?'selected':''}>${obj}</option>`;
-                        });
                         
-                        // 현재 값이 목록에 없다면(예외사항) 임시로 옵션 추가
-                        if(currVal && !defaults.includes(currVal) && !globalObjectNames.includes(currVal)) {
+                        // 2. 파싱된 객체 중 조건에 맞는 객체만 목록에 추가
+                        if (id !== 'ep') {
+                            allObjNames.forEach(obj => {
+                                const objTypeLower = obj.type.toLowerCase();
+                                if (validTypes.includes(objTypeLower)) {
+                                    if (!defaults.includes(obj.name)) {
+                                        html += `<option value="${obj.name}" ${currVal===obj.name?'selected':''}>${obj.name}</option>`;
+                                    }
+                                }
+                            });
+                        }
+                        
+                        // 3. 현재 값이 예외적으로 존재하거나 매핑되지 않은 경우 리스트에 임시 추가 표시
+                        if(currVal && !defaults.includes(currVal) && !allObjNames.some(o => o.name === currVal && (!validTypes.length || validTypes.includes(o.type.toLowerCase())))) {
                             html = `<option value="${currVal}" selected>${currVal}</option>` + html;
                         }
                         inputEl.innerHTML = html;

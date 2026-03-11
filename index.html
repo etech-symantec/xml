@@ -364,9 +364,16 @@
   .context-menu-item { padding: 8px 14px; cursor: pointer; border-bottom: 1px solid #f1f5f9; color: #334155; }
   .context-menu-item:hover { background-color: #f1f5f9; color: var(--accent); }
   
-  .bg-primary { background-color: var(--accent); color:white;}
-  .bg-success { background-color: #10b981; color:white;}
-  .bg-warning { background-color: #f59e0b; color:white;}
+  /* =========================================
+     [수정] 객체 타입별 통합 뱃지 컬러
+     ========================================= */
+  .badge-primary   { background-color: #2563eb !important; color: #ffffff !important; }  /* URL List 등 */
+  .badge-success   { background-color: #10b981 !important; color: #ffffff !important; }  /* IP 등 */
+  .badge-info      { background-color: #0ea5e9 !important; color: #ffffff !important; }  /* URL 패턴 등 */
+  .badge-warning   { background-color: #f59e0b !important; color: #ffffff !important; }  /* 예외/알림 등 */
+  .badge-danger    { background-color: #ef4444 !important; color: #ffffff !important; }  /* SSL/보안 등 */
+  .badge-dark      { background-color: #334155 !important; color: #ffffff !important; }  /* Combined 그룹 */
+  .badge-secondary { background-color: #94a3b8 !important; color: #ffffff !important; }  /* 기타 모든 속성 */
   
   /* Pagination */
   .pagination { display: flex; list-style: none; padding: 0; margin: 0; gap: 4px;}
@@ -1640,7 +1647,7 @@ function setBasicObjFilter(type, el) {
 
 function applyBasicFilter(){ currentBasicPage=1; renderBasicTable(); }
 
-// --- Basic Objects 테이블 렌더링 (대분류 + 소분류 필터 연계 적용) ---
+// --- Basic Objects 테이블 렌더링 ---
 function renderBasicTable() { 
     const s = document.getElementById('objSearch').value.toLowerCase().trim();
     const tb = document.getElementById("basicObjTableBody");
@@ -1649,7 +1656,6 @@ function renderBasicTable() {
         if (!o.name.toLowerCase().includes(s)) return false;
         const t = o.type.toLowerCase();
         
-        // 1단계: 대분류 필터 통과 확인
         if (currentMajorFilter !== "All") {
             if (currentMajorFilter === "Others") {
                 let found = false;
@@ -1661,12 +1667,9 @@ function renderBasicTable() {
                 if (!vpmTypeGroups[currentMajorFilter].includes(t)) return false;
             }
         }
-        
-        // 2단계: 소분류 필터 통과 확인
         if (currentMinorFilter !== "All") {
             if (t !== currentMinorFilter.toLowerCase()) return false;
         }
-        
         return true;
     });
     
@@ -1679,15 +1682,10 @@ function renderBasicTable() {
     }
     
     f.slice((currentBasicPage-1)*itemsPerPage, currentBasicPage*itemsPerPage).forEach(o => {
-        let b = 'bg-secondary';
-        if (o.type === 'URL List') b = 'bg-primary';
-        else if (o.type === 'IP') b = 'bg-success';
-        else if (o.type === 'a-url' || o.type === 'hdr-obj') b = 'bg-info text-dark';
-        else if (o.type === 'time' || o.type === 'htm-ntfy') b = 'bg-warning text-dark';
+        let b = getBadgeClass(o.type); // 통합 뱃지 적용
         
         let lineCount = (o.value.match(/\n/g) || []).length + 1;
         let rows = lineCount > 4 ? 4 : lineCount;
-        
         let readonlyAttr = o.attr ? '' : 'readonly';
         let bgStyle = o.attr ? '' : 'background-color: #f8f9fa; color: #64748b; border-style: dashed;';
         let titleTip = o.attr ? '' : 'title="복합 속성을 가진 객체로 이 화면에서는 읽기 전용입니다."';
@@ -1733,15 +1731,26 @@ function renderCombinedList(){
 }
 function changeCombPage(p) { currentCombListPage = p; renderCombinedList(); }
 
+// --- Combined Objects 선택 및 멤버 리스트 렌더링 ---
 function selectCombined(idx){
-    selectedCombIndex=idx; renderCombinedList();
-    const o=filteredCombinedObjects[idx]; document.getElementById("combinedEmptyState").style.display="none"; document.getElementById("combinedDetailView").style.display="block"; document.getElementById("selectedCombName").innerText=o.name;
-    const a=document.getElementById("memberListArea"); a.innerHTML="";
-    if(o.members.length===0) a.innerHTML=`<div style="text-align:center; padding:15px; background:#f8f9fa; border:1px solid #dee2e6;">멤버 없음</div>`;
-    else o.members.forEach(m=>{
-        const f=allObjNames.find(x=>x.name===m), t=f?f.type:"Unknown", b=t==='URL List'?'bg-primary':(t==='IP'?'bg-success':'bg-warning text-dark');
-        a.innerHTML+=`<div class="member-card"><div><span class="badge-type ${b}" style="margin-right:8px;">${t}</span><span style="font-weight:bold;">${m}</span></div><button style="border:none; background:transparent; color:#dc3545; cursor:pointer;" onclick="removeMember('${m}')">✕</button></div>`;
-    });
+    selectedCombIndex = idx; renderCombinedList();
+    const o = filteredCombinedObjects[idx]; 
+    document.getElementById("combinedEmptyState").style.display = "none"; 
+    document.getElementById("combinedDetailView").style.display = "block"; 
+    document.getElementById("selectedCombName").innerText = o.name;
+    const a = document.getElementById("memberListArea"); a.innerHTML = "";
+    
+    if(o.members.length === 0) {
+        a.innerHTML = `<div style="text-align:center; padding:15px; background:#f8f9fa; border:1px solid #dee2e6;">멤버 없음</div>`;
+    } else {
+        o.members.forEach(m => {
+            const f = allObjNames.find(x => x.name === m);
+            const t = f ? f.type : "Unknown";
+            const b = getBadgeClass(t); // 통합 뱃지 적용
+            
+            a.innerHTML += `<div class="member-card"><div><span class="badge-type ${b}" style="margin-right:8px;">${t}</span><span style="font-weight:bold;">${m}</span></div><button style="border:none; background:transparent; color:#dc3545; cursor:pointer;" onclick="removeMember('${m}')">✕</button></div>`;
+        });
+    }
 }
 function removeMember(m){ const o=filteredCombinedObjects[selectedCombIndex]; o.members=o.members.filter(x=>x!==m); for(let c of o.element.children){if(c.getAttribute('n')===m){o.element.removeChild(c);break;}} selectCombined(selectedCombIndex); }
 
@@ -1792,24 +1801,27 @@ function renderPolicyLayer() {
     }
 }
 
-// --- [신규] Policy 테이블 내 객체 뱃지 스타일 적용 헬퍼 함수 ---
+// --- [신규] 모든 객체 타입에 대한 뱃지 색상 자동 배정 함수 ---
+function getBadgeClass(type) {
+    if (!type) return 'badge-secondary';
+    const t = type.toLowerCase();
+    if (t === 'url list') return 'badge-primary';
+    if (t === 'ip') return 'badge-success';
+    if (t === 'combined') return 'badge-dark';
+    if (['a-url', 'app-url', 'categorylist4', 'file-download', 'op-url', 'host-port'].includes(t)) return 'badge-info';
+    if (['htm-ntfy', 'dny-exc', 'dny-obj', 'trace-obj', 'acc-log-fac', 'bw-mgmt'].includes(t)) return 'badge-warning';
+    if (['ssl-fwd-prxy', 'ssl-fwd-prxy522', 'svr-cert-valdn', 'client-encrypted-tap', 'adm-auth-obj', 'scan', 'process-request'].includes(t)) return 'badge-danger';
+    return 'badge-secondary'; // time, hdr-obj, user-agent-list 등 기타 모든 객체
+}
+
+// --- Policy 테이블 내 객체 뱃지 스타일 적용 ---
 function getStyledObjHtml(val) {
     if (!val || val === '-' || ['Any','None','Allow','Deny','Force Deny','Appliance','WSS','Universal'].includes(val)) {
-        return val; // 기본 텍스트나 액션/타겟 값은 뱃지 없이 텍스트만 출력
+        return val;
     }
-    
     let found = allObjNames.find(o => o.name === val);
     let type = found ? found.type : 'Unknown';
-    
-    // Basic Object와 동일한 컬러 매핑 적용
-    let b = 'bg-secondary';
-    let tLower = type.toLowerCase();
-    if (tLower === 'url list') b = 'bg-primary';
-    else if (tLower === 'ip') b = 'bg-success';
-    else if (['a-url', 'hdr-obj', 'app-url', 'categorylist4'].includes(tLower)) b = 'bg-info text-dark';
-    else if (['time', 'htm-ntfy', 'dny-exc', 'dny-obj'].includes(tLower)) b = 'bg-warning text-dark';
-    else if (tLower === 'combined') b = 'bg-dark text-white';
-    else b = 'bg-secondary text-white';
+    let b = getBadgeClass(type);
     
     return `<span class="badge-type ${b}" style="margin-right:6px; padding:3px 6px;">${type}</span> ${val}`;
 }
@@ -2057,10 +2069,28 @@ function addBasicObject(){
 }
 function addCombinedGroup(){ const n=prompt("새 그룹 이름:"); if(!n)return; const c=xmlDoc.getElementsByTagName("conditionObjects")[0], e=xmlDoc.createElement("comb-obj"); e.setAttribute("name",n); c.appendChild(e); parseAllObjects(); }
 function deleteCurrentGroup(){ if(confirm("그룹을 삭제하시겠습니까?")){ const o=filteredCombinedObjects[selectedCombIndex]; o.element.parentNode.removeChild(o.element); parseAllObjects(); document.getElementById("combinedDetailView").style.display="none"; } }
+// --- 모달창 내 객체 선택 렌더링 ---
 function searchMemberCandidates(){
-    const q=document.getElementById("memberSearchInput").value.toLowerCase(), cg=filteredCombinedObjects[selectedCombIndex], tb=document.getElementById("memberCandidateBody"); tb.innerHTML="";
-    let c=0; for(let i of allObjNames){ if(c>50)break; if(i.name!==cg.name && !cg.members.includes(i.name) && i.name.toLowerCase().includes(q)){ c++; tb.innerHTML+=`<tr><td>${i.type}</td><td>${i.name}</td><td><button style="padding:2px 8px; font-size:0.7rem; background:#0d6efd; color:white; border:none; border-radius:4px;" onclick="addMemberFromModal('${i.name}')">선택</button></td></tr>`; } }
-    if(c===0)tb.innerHTML=`<tr><td colspan="3" style="text-align:center; padding:20px;">검색 결과 없음</td></tr>`;
+    const q = document.getElementById("memberSearchInput").value.toLowerCase();
+    const cg = filteredCombinedObjects[selectedCombIndex];
+    const tb = document.getElementById("memberCandidateBody"); 
+    tb.innerHTML = "";
+    
+    let c = 0; 
+    for(let i of allObjNames) { 
+        if(c > 50) break; 
+        if(i.name !== cg.name && !cg.members.includes(i.name) && i.name.toLowerCase().includes(q)) { 
+            c++; 
+            const b = getBadgeClass(i.type); // 통합 뱃지 적용
+            
+            tb.innerHTML += `<tr>
+                <td style="width:25%; text-align:center;"><span class="badge-type ${b}">${i.type}</span></td>
+                <td style="font-weight:bold; color:#334155;">${i.name}</td>
+                <td style="text-align:right;"><button style="padding:4px 12px; font-weight:bold; font-size:0.7rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;" onclick="addMemberFromModal('${i.name}')">선택</button></td>
+            </tr>`; 
+        } 
+    }
+    if(c === 0) tb.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:20px; color:#94a3b8;">검색 결과 없음</td></tr>`;
 }
 function addMemberFromModal(n){ const o=filteredCombinedObjects[selectedCombIndex]; o.members.push(n); const c=xmlDoc.createElement("c-l-1"); c.setAttribute("n",n); o.element.appendChild(c); closeMemberSelectModal(); selectCombined(selectedCombIndex); }
 

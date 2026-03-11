@@ -333,13 +333,18 @@
   .filter-tabs .nav-link { border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; color: #475569; background-color: white; border: 1px solid #cbd5e1; margin-right: 6px; cursor: pointer; display: block; text-decoration: none;}
   .filter-tabs .nav-link.active { background-color: #475569; color: white; border-color: #475569; font-weight:bold;}
 
-  .table-wrapper { border: 1px solid #dee2e6; border-radius: 6px; overflow: auto; flex: 1; }
+  /* Policy 테이블 스타일 테두리 구분 강화 */
+  .table-wrapper { border: 1px solid #cbd5e1; border-radius: 6px; overflow: auto; flex: 1; }
   .vpm-table { width:100%; border-collapse: collapse; font-size: 0.75rem; margin-bottom: 0; }
-  .vpm-table th { background-color: #f8fafc; color: #475569; font-weight: bold; position: sticky; top: 0; z-index: 10; white-space: nowrap; padding: 8px 10px; border-bottom: 1px solid #dee2e6;}
-  .vpm-table td { padding: 6px 10px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; height: 32px; }
+  .vpm-table th { background-color: #f8fafc; color: #475569; font-weight: bold; position: sticky; top: 0; z-index: 10; white-space: nowrap; padding: 8px 10px; border: 1px solid #cbd5e1; border-bottom: 2px solid #94a3b8; }
+  .vpm-table td { padding: 6px 10px; vertical-align: middle; border: 1px solid #cbd5e1; height: 32px; cursor: pointer; transition: background 0.2s; }
 
   .disabled-row, .disabled-row > td { background-color: #f8fafc !important; color: #94a3b8 !important; font-style: italic; }
-  .vpm-table tbody tr:hover { background-color: #f1f5f9; }
+  .vpm-table tbody tr:hover td { background-color: #f1f5f9; }
+
+  /* 클릭 시 나타나는 입력/선택 창 스타일 */
+  .inline-input { width: 100%; border: 2px solid var(--accent); font-size: 0.75rem; padding: 4px 6px; border-radius: 4px; outline:none; }
+  .inline-select { width: 100%; border: 2px solid var(--accent); font-size: 0.75rem; padding: 4px; border-radius: 4px; outline:none; background:#fff; cursor:pointer; }
 
   .combined-layout { display: flex; height: 100%; border: 1px solid #dee2e6; border-radius: 6px; overflow: hidden; }
   .combined-list-area { width: 30%; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; background-color: #f8f9fa; }
@@ -1039,8 +1044,13 @@ end policy &quot;HTTP이름&quot;
             </div>
 
             <div id="editor-combinedObjects" style="display: none; height: 100%; flex-direction: column;">
-                <div class="editor-toolbar">
-                    <div style="display: flex; gap: 8px;">
+                <div class="editor-toolbar mt-2">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <select id="combRowsPerPage" style="font-size:0.8rem; padding:5px; border:1px solid #cbd5e1; border-radius:4px; outline:none;" onchange="changeCombItemsPerPage()">
+                            <option value="50" selected>50개</option>
+                            <option value="100">100개</option>
+                            <option value="200">200개</option>
+                        </select>
                         <input type="text" id="combSearch" placeholder="그룹 이름 검색" style="font-size:0.8rem; padding:5px 10px; border:1px solid #cbd5e1; border-radius:4px; outline:none;" onkeypress="if(event.key==='Enter') applyCombinedFilter()">
                         <button style="font-size:0.8rem; padding:5px 12px; border:1px solid #cbd5e1; background:#fff; border-radius:4px; cursor:pointer;" onclick="applyCombinedFilter()">🔍</button>
                     </div>
@@ -1534,9 +1544,25 @@ function loadXMLFromString(xmlString) {
     renderBasicTable();
 }
 
+let globalObjectNames = []; // 셀렉트 박스에 띄워줄 전체 객체 리스트
+let combItemsPerPage = 50;  // Combined Object용 별도 페이지네이션 변수
+
+// 1. 객체 파싱할 때 전체 이름 수집 로직 추가
 function parseAllObjects() {
-    basicObjects = []; combinedObjects = []; allObjNames = [];
+    basicObjects = []; combinedObjects = []; allObjNames = []; globalObjectNames = [];
     const conds = xmlDoc.getElementsByTagName("conditionObjects")[0]; if (!conds) return;
+    
+    // Policy 드롭다운을 위해 conditionObjects 안의 모든 객체 이름 수집
+    Array.from(conds.children).forEach(child => {
+        if (child.tagName === 'vpm-cat') {
+            for (let n of child.getElementsByTagName("node")) globalObjectNames.push(n.getAttribute('n'));
+        } else {
+            let name = child.getAttribute('name');
+            if (name) globalObjectNames.push(name);
+        }
+    });
+    globalObjectNames.sort((a,b) => a.toLowerCase().localeCompare(b.toLowerCase())); // 알파벳 순 정렬
+
     for (let n of conds.getElementsByTagName("node")) { basicObjects.push({type:'URL List', name:n.getAttribute('n'), value:n.getAttribute('u-l'), element:n, attr:'u-l'}); allObjNames.push({name:n.getAttribute('n'), type:'URL List'}); }
     for (let ip of conds.getElementsByTagName("ipobject")) { basicObjects.push({type:'IP', name:ip.getAttribute('name'), value:ip.getAttribute('value'), element:ip, attr:'value'}); allObjNames.push({name:ip.getAttribute('name'), type:'IP'}); }
     const combs = conds.getElementsByTagName("comb-obj");
@@ -1568,11 +1594,37 @@ function renderBasicTable(){
     let f=basicObjects.filter(o=>(currentBasicObjFilter==="All"||o.type===currentBasicObjFilter)&&o.name.toLowerCase().includes(s));
     tb.innerHTML=""; document.getElementById("basicTotalCount").innerText=`Total: ${f.length}`;
     if(f.length===0){tb.innerHTML=`<tr><td colspan="4" style="text-align:center; padding:20px;">검색 결과 없음</td></tr>`; return;}
+    
     f.slice((currentBasicPage-1)*itemsPerPage, currentBasicPage*itemsPerPage).forEach(o=>{
-        let b=o.type==='URL List'?'bg-primary':(o.type==='IP'?'bg-success':'bg-warning text-dark');
-        tb.innerHTML+=`<tr><td style="text-align:center;"><span class="badge-type ${b}">${o.type}</span></td><td style="font-weight:bold;">${o.name}</td><td><input type="text" style="width:100%; border:1px solid #ccc; font-size:0.7rem; padding:2px;" value="${o.value}" onchange="updateBasicVal(this,'${o.name}')"></td><td style="text-align:center;">-</td></tr>`;
+        let b = o.type==='URL List' ? 'bg-primary' : (o.type==='IP' ? 'bg-success' : 'bg-warning text-dark');
+        
+        // 데이터 줄 수에 따라 텍스트박스 기본 높이 조정 (최소 1줄 ~ 최대 4줄)
+        let lineCount = (o.value.match(/\n/g) || []).length + 1;
+        let rows = lineCount > 4 ? 4 : lineCount;
+        
+        tb.innerHTML += `<tr>
+            <td style="text-align:center;"><span class="badge-type ${b}">${o.type}</span></td>
+            <td style="font-weight:bold;">${o.name}</td>
+            <td>
+                <textarea style="width:100%; border:1px solid #cbd5e1; border-radius:4px; font-size:0.75rem; padding:4px 6px; resize:vertical; outline:none; font-family:monospace; line-height:1.4;" rows="${rows}" onchange="updateBasicVal(this,'${o.name}')">${o.value}</textarea>
+            </td>
+            <td style="text-align:center;">
+                <button style="border:none; background:transparent; color:#ef4444; font-size:1.1rem; cursor:pointer;" onclick="deleteBasicObject('${o.name}')" title="삭제">🗑</button>
+            </td>
+        </tr>`;
     });
     renderPagination("paginationControls", f.length, currentBasicPage, 'changeBasicPage');
+}
+
+// [신규] Basic Object 삭제 로직
+function deleteBasicObject(name) {
+    if(confirm(`'${name}' 객체를 정말 삭제하시겠습니까? (Combined 그룹이나 Policy에서 사용 중일 경우 문제가 발생할 수 있습니다.)`)) {
+        const obj = basicObjects.find(x => x.name === name);
+        if(obj && obj.element && obj.element.parentNode) {
+            obj.element.parentNode.removeChild(obj.element);
+            parseAllObjects(); // 삭제 후 트리를 다시 파싱하여 UI 새로고침
+        }
+    }
 }
 
 function updateBasicVal(el,n){const o=basicObjects.find(x=>x.name===n); if(o){o.value=el.value; o.element.setAttribute(o.attr, el.value);}}
@@ -1582,12 +1634,12 @@ function applyCombinedFilter(){ const s=document.getElementById('combSearch').va
 function renderCombinedList(){
     const l=document.getElementById("combinedListGroup"); l.innerHTML=""; 
     if(filteredCombinedObjects.length===0){l.innerHTML=`<div style="padding:15px; text-align:center;">없음</div>`; document.getElementById("combListPagination").innerHTML=""; return;}
-    const start=(currentCombListPage-1)*itemsPerPage;
-    filteredCombinedObjects.slice(start, start+itemsPerPage).forEach((o,i)=>{
+    const start=(currentCombListPage-1)*combItemsPerPage;
+    filteredCombinedObjects.slice(start, start+combItemsPerPage).forEach((o,i)=>{
         const gIdx=start+i;
         l.innerHTML+=`<div class="list-group-item ${gIdx===selectedCombIndex?'active':''}" onclick="selectCombined(${gIdx})"><span>${o.name}</span><span style="background:#e2e8f0; padding:2px 6px; border-radius:10px; font-size:0.65rem;">${o.members.length}</span></div>`;
     });
-    renderPagination("combListPagination", filteredCombinedObjects.length, currentCombListPage, 'changeCombPage');
+    renderPagination("combListPagination", filteredCombinedObjects.length, currentCombListPage, 'changeCombPage', combItemsPerPage);
 }
 function changeCombPage(p) { currentCombListPage = p; renderCombinedList(); }
 
@@ -1603,13 +1655,21 @@ function selectCombined(idx){
 }
 function removeMember(m){ const o=filteredCombinedObjects[selectedCombIndex]; o.members=o.members.filter(x=>x!==m); for(let c of o.element.children){if(c.getAttribute('n')===m){o.element.removeChild(c);break;}} selectCombined(selectedCombIndex); }
 
-function renderPagination(id, total, curr, funcName) {
-    const nav = document.getElementById(id); nav.innerHTML = ""; const pages = Math.ceil(total / itemsPerPage); if (pages <= 1) return;
+// 2. Pagination 함수에 perPage 변수 인자 추가
+function renderPagination(id, total, curr, funcName, perPage = itemsPerPage) {
+    const nav = document.getElementById(id); nav.innerHTML = ""; const pages = Math.ceil(total / perPage); if (pages <= 1) return;
     const li = (text, page, active) => `<li class="page-item ${active?'active':''}"><a class="page-link" onclick="${funcName}(${page})">${text}</a></li>`;
     nav.innerHTML += li("Prev", Math.max(1, curr-1), false);
     let start = Math.max(1, curr - 2); let end = Math.min(pages, curr + 2);
     for (let i = start; i <= end; i++) nav.innerHTML += li(i, i, i === curr);
     nav.innerHTML += li("Next", Math.min(pages, curr+1), false);
+}
+
+// 3. Combined Objects 목록 개수 변경 함수 신규 추가
+function changeCombItemsPerPage() {
+    combItemsPerPage = parseInt(document.getElementById("combRowsPerPage").value, 10);
+    currentCombListPage = 1;
+    renderCombinedList();
 }
 
 function initLayerTabs() {
@@ -1642,6 +1702,7 @@ function renderPolicyLayer() {
     }
 }
 
+// 4. Policy 셀 클릭 시 드롭다운 띄우기 기능 완벽 적용
 function renderStandardTable(rows, table) {
     const tbody = table.querySelector("tbody"); const thead = table.querySelector("thead");
     const knownCols = {'no':'No.', 'so':'Source', 'de':'Destination', 'se':'Service', 'ac':'Action', 'tr':'Track', 'ep':'Target', 'ti':'Time', 'co':'Comment'};
@@ -1658,8 +1719,86 @@ function renderStandardTable(rows, table) {
         let colData = {}; for(let c of row.getElementsByTagName("colItem")) colData[c.getAttribute("id")] = c.getAttribute("name");
         finalColOrder.forEach(id => {
             let td = document.createElement("td");
-            if(id === 'no') { td.innerText = (i+1); td.style.textAlign="center"; td.style.fontWeight="bold"; td.style.background="#f8f9fa"; } 
-            else { td.innerText = colData[id] || "-"; if(!colData[id]) td.style.color="#adb5bd"; }
+            if(id === 'no') { 
+                td.innerText = (i+1); td.style.textAlign="center"; td.style.fontWeight="bold"; td.style.background="#f8f9fa"; 
+            } else { 
+                let cellVal = colData[id] || "-";
+                td.innerText = cellVal; 
+                if(!colData[id]) td.style.color="#94a3b8"; 
+                
+                // [클릭 이벤트] 객체 선택 드롭다운 또는 텍스트 인풋 생성
+                td.onclick = function(e) {
+                    if(this.querySelector("input") || this.querySelector("select")) return;
+                    let currVal = this.innerText === "-" ? "" : this.innerText;
+                    this.innerHTML = "";
+                    let inputEl;
+
+                    if (id === 'co') {
+                        // Comment는 텍스트 입력
+                        inputEl = document.createElement("input");
+                        inputEl.type = "text";
+                        inputEl.value = currVal;
+                        inputEl.className = "inline-input";
+                    } else {
+                        // 나머지 열은 드롭다운 박스
+                        inputEl = document.createElement("select");
+                        inputEl.className = "inline-select";
+                        
+                        let defaults = [];
+                        if(id==='ac') defaults = ['None','Allow','Deny','Force Deny'];
+                        else if(id==='tr') defaults = ['None'];
+                        else if(id==='ep') defaults = ['Appliance', 'WSS'];
+                        else defaults = ['Any']; // so, de, se, ti
+                        
+                        let html = '';
+                        defaults.forEach(d => html += `<option value="${d}" ${currVal===d?'selected':''}>${d}</option>`);
+                        globalObjectNames.forEach(obj => {
+                            if(!defaults.includes(obj)) html += `<option value="${obj}" ${currVal===obj?'selected':''}>${obj}</option>`;
+                        });
+                        
+                        // 현재 값이 목록에 없다면(예외사항) 임시로 옵션 추가
+                        if(currVal && !defaults.includes(currVal) && !globalObjectNames.includes(currVal)) {
+                            html = `<option value="${currVal}" selected>${currVal}</option>` + html;
+                        }
+                        inputEl.innerHTML = html;
+                        inputEl.onclick = (ev) => ev.stopPropagation(); // 클릭 전파 방지
+                    }
+
+                    const saveVal = () => {
+                        const newVal = inputEl.value.trim();
+                        let colItems = row.getElementsByTagName("colItem");
+                        let found = false;
+                        for(let c of colItems) {
+                            if(c.getAttribute("id") === id) {
+                                c.setAttribute("name", newVal);
+                                found = true; break;
+                            }
+                        }
+                        if(!found && newVal !== "") {
+                            let newC = xmlDoc.createElement("colItem");
+                            newC.setAttribute("id", id);
+                            newC.setAttribute("name", newVal);
+                            let t = (['Any','None','Allow','Deny','Force Deny'].includes(newVal)) ? 'String' : 'Condition';
+                            newC.setAttribute("type", t);
+                            row.appendChild(newC);
+                        }
+                        
+                        this.innerText = newVal || "-";
+                        if(!newVal) this.style.color = "#94a3b8"; else this.style.color = "";
+                        colData[id] = newVal;
+                    };
+                    
+                    if(inputEl.tagName === 'INPUT') {
+                        inputEl.onblur = saveVal;
+                        inputEl.onkeydown = (k) => { if(k.key==='Enter') saveVal(); else if(k.key==='Escape') this.innerText = currVal||"-"; };
+                    } else {
+                        inputEl.onblur = saveVal;
+                        inputEl.onchange = saveVal;
+                    }
+                    this.appendChild(inputEl);
+                    inputEl.focus();
+                };
+            }
             tr.appendChild(td);
         });
         tbody.appendChild(tr);

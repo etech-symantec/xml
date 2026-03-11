@@ -996,6 +996,8 @@ end policy &quot;HTTP이름&quot;
                     <input type="file" id="fileInput" accept=".xml,.txt" class="hidden-file-input">
                 </div>
 
+                <button style="background: white; color: #475569; border: 1px solid #cbd5e1; padding: 6px 12px; height: 36px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#0f172a'" onmouseout="this.style.background='white'; this.style.color='#475569'" onclick="openPasteModal()">📋 직접 붙여넣기</button>
+
                 <button style="background:#10b981; color:white; border:none; padding:6px 16px; height: 36px; border-radius:6px; font-weight:bold; font-size:13px; cursor:pointer; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);" onclick="downloadXML()">💾 XML 저장</button>
             </div>
         </div>
@@ -1135,6 +1137,24 @@ end policy &quot;HTTP이름&quot;
                         <table class="vpm-table" style="width:100%;">
                             <tbody id="memberCandidateBody"><tr><td style="text-align:center; padding:30px; color:#94a3b8;">검색어를 입력하세요.</td></tr></tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="pasteXmlModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 style="margin:0; font-size:1.1rem; font-weight:bold; color:#1e293b;">XML 텍스트 직접 붙여넣기</h5>
+                    <button class="btn-close" onclick="closePasteModal()">X</button>
+                </div>
+                <div class="modal-body">
+                    <textarea id="pasteXmlInput" style="width:100%; height:300px; padding:12px; font-family:Consolas, monospace; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; resize:vertical; outline:none; background:#f8fafc;" placeholder="<?xml version='1.0' encoding='UTF-8'?>&#10;<vpmapp>&#10;  ... 여기에 복사한 XML 텍스트를 붙여넣으세요 ...&#10;</vpmapp>"></textarea>
+                    <div style="text-align:right; margin-top:16px;">
+                        <button style="background:#94a3b8; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; margin-right:8px; cursor:pointer;" onclick="closePasteModal()">취소</button>
+                        <button style="background:var(--accent); color:white; border:none; padding:8px 20px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="applyPastedXml()">적용하기 ➔</button>
                     </div>
                 </div>
             </div>
@@ -1666,6 +1686,35 @@ function searchMemberCandidates(){
 function addMemberFromModal(n){ const o=filteredCombinedObjects[selectedCombIndex]; o.members.push(n); const c=xmlDoc.createElement("c-l-1"); c.setAttribute("n",n); o.element.appendChild(c); closeMemberSelectModal(); selectCombined(selectedCombIndex); }
 
 function downloadXML() { if (!xmlDoc) return alert("데이터가 없습니다."); const s = new XMLSerializer(); const b = new Blob([s.serializeToString(xmlDoc)], {type: "text/xml"}); const l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = "vpm_modified.xml"; l.click(); }
+
+// --- XML 텍스트 직접 붙여넣기 로직 ---
+function openPasteModal() { 
+    document.getElementById('pasteXmlModal').classList.add('show'); 
+    document.getElementById('pasteXmlInput').value = ''; // 열 때마다 초기화
+    document.getElementById('pasteXmlInput').focus();
+}
+
+function closePasteModal() { 
+    document.getElementById('pasteXmlModal').classList.remove('show'); 
+}
+
+function applyPastedXml() {
+    const xmlString = document.getElementById('pasteXmlInput').value.trim();
+    if (!xmlString) {
+        alert("XML 데이터를 입력해주세요.");
+        return;
+    }
+    
+    // 모달 닫고 기존 파싱 함수에 문자열 전달
+    closePasteModal();
+    loadXMLFromString(xmlString);
+    
+    // 상태 텍스트 업데이트
+    const dropZoneText = document.getElementById('dropZoneText');
+    if (dropZoneText) {
+        dropZoneText.innerHTML = `<span style="color:var(--accent); font-weight:bold;">수동 입력된 XML 데이터</span>`;
+    }
+}
 </script>
 
 </body>

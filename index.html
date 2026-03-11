@@ -422,6 +422,13 @@
     top: 0; left: 0; width: 100%; height: 100%;
     opacity: 0; cursor: pointer;
   }
+
+  /* 특수 키워드 전용 뱃지 스타일 */
+  .badge-any { background-color: #ffffff !important; color: #64748b !important; border: 1px solid #cbd5e1 !important; }
+  .badge-none { background-color: #f8fafc !important; color: #94a3b8 !important; border: 1px dashed #cbd5e1 !important; }
+  .badge-target-app { background-color: #6366f1 !important; color: #ffffff !important; } /* Appliance - 남색 */
+  .badge-target-wss { background-color: #0ea5e9 !important; color: #ffffff !important; } /* WSS - 하늘색 */
+  .badge-target-uni { background-color: #8b5cf6 !important; color: #ffffff !important; } /* Universal - 보라색 */
 </style>
 </head>
 <body>
@@ -1814,11 +1821,32 @@ function getBadgeClass(type) {
     return 'badge-secondary'; // time, hdr-obj, user-agent-list 등 기타 모든 객체
 }
 
-// --- Policy 테이블 내 객체 뱃지 스타일 적용 ---
-function getStyledObjHtml(val) {
-    if (!val || val === '-' || ['Any','None','Allow','Deny','Force Deny','Appliance','WSS','Universal'].includes(val)) {
-        return val;
+// --- Policy 테이블 내 객체 뱃지 스타일 적용 (특수 키워드 지원) ---
+function getStyledObjHtml(val, colId) {
+    if (!val || val === '-') return val;
+    
+    // 1. 공통 특수 키워드 (Any, None)
+    if (val === 'Any') {
+        return `<span class="badge-type badge-any" style="padding:3px 6px;">Any</span>`;
     }
+    if (val === 'None') {
+        return `<span class="badge-type badge-none" style="padding:3px 6px;">None</span>`;
+    }
+    
+    // 2. Target(ep) 전용 옵션 스타일
+    if (colId === 'ep') {
+        if (val === 'Appliance') return `<span class="badge-type badge-target-app" style="margin-right:6px; padding:3px 6px;">Target</span> <span style="font-weight:600;">${val}</span>`;
+        if (val === 'WSS') return `<span class="badge-type badge-target-wss" style="margin-right:6px; padding:3px 6px;">Target</span> <span style="font-weight:600;">${val}</span>`;
+        if (val === 'Universal') return `<span class="badge-type badge-target-uni" style="margin-right:6px; padding:3px 6px;">Target</span> <span style="font-weight:600;">${val}</span>`;
+    }
+    
+    // 3. Action(ac) 기본 옵션 스타일
+    if (colId === 'ac' && ['Allow', 'Deny', 'Force Deny'].includes(val)) {
+        let b = val === 'Allow' ? 'badge-success' : 'badge-danger';
+        return `<span class="badge-type ${b}" style="margin-right:6px; padding:3px 6px;">Action</span> <span style="font-weight:600;">${val}</span>`;
+    }
+
+    // 4. 일반 파싱된 객체 스타일
     let found = allObjNames.find(o => o.name === val);
     let type = found ? found.type : 'Unknown';
     let b = getBadgeClass(type);
@@ -1826,7 +1854,7 @@ function getStyledObjHtml(val) {
     return `<span class="badge-type ${b}" style="margin-right:6px; padding:3px 6px;">${type}</span> ${val}`;
 }
 
-// 4. Policy 셀 클릭 시 조건별 드롭다운 띄우기 로직 (스타일 및 필터링 업데이트)
+// --- Policy 테이블 렌더링 ---
 function renderStandardTable(rows, table) {
     const tbody = table.querySelector("tbody"); const thead = table.querySelector("thead");
     const knownCols = {'no':'No.', 'so':'Source', 'de':'Destination', 'se':'Service', 'ac':'Action', 'tr':'Track', 'ep':'Target', 'ti':'Time', 'co':'Comment'};
@@ -1849,14 +1877,16 @@ function renderStandardTable(rows, table) {
             } else { 
                 let cellVal = colData[id] || "-";
                 
+                // 여기서 id를 파라미터로 넘기도록 수정됨
                 if (id !== 'co') {
-                    td.innerHTML = getStyledObjHtml(cellVal);
+                    td.innerHTML = getStyledObjHtml(cellVal, id);
                 } else {
                     td.innerText = cellVal; 
                 }
-                if(!colData[id]) td.style.color="#94a3b8"; 
                 
-                // [클릭 이벤트] 객체 선택 드롭다운 생성
+                // None이거나 값이 없을 때 텍스트 흐리게
+                if(!colData[id] || cellVal === 'None') td.style.color="#94a3b8"; 
+                
                 td.onclick = function(e) {
                     if(this.querySelector("input") || this.querySelector("select")) return;
                     let currVal = colData[id] || ""; 
@@ -1907,12 +1937,8 @@ function renderStandardTable(rows, table) {
                             allObjNames.forEach(obj => {
                                 const objTypeLower = obj.type.toLowerCase();
                                 if (validTypes.includes(objTypeLower)) {
-                                    
-                                    // [신규 로직] 이름에 'Client IP'가 들어간 객체는 Source(so)에서만 보이도록 필터링
                                     const isClientIP = obj.name.toLowerCase().includes('client ip');
-                                    if (isClientIP && id !== 'so') {
-                                        return; // Source 항목이 아니면 드롭다운 목록에서 제외
-                                    }
+                                    if (isClientIP && id !== 'so') return; 
 
                                     if (!defaults.includes(obj.name)) {
                                         html += `<option value="${obj.name}" ${currVal===obj.name?'selected':''}>[${obj.type}] ${obj.name}</option>`;
@@ -1947,10 +1973,11 @@ function renderStandardTable(rows, table) {
                             row.appendChild(newC);
                         }
                         
-                        if (id !== 'co') this.innerHTML = getStyledObjHtml(newVal || "-");
+                        // 다시 뱃지로 변환
+                        if (id !== 'co') this.innerHTML = getStyledObjHtml(newVal || "-", id);
                         else this.innerText = newVal || "-";
                         
-                        if(!newVal) this.style.color = "#94a3b8"; else this.style.color = "";
+                        if(!newVal || newVal === 'None') this.style.color = "#94a3b8"; else this.style.color = "";
                         colData[id] = newVal;
                     };
                     
@@ -1959,7 +1986,7 @@ function renderStandardTable(rows, table) {
                         inputEl.onkeydown = (k) => { 
                             if(k.key==='Enter') saveVal(); 
                             else if(k.key==='Escape') { 
-                                if(id !== 'co') this.innerHTML = getStyledObjHtml(currVal || "-"); 
+                                if(id !== 'co') this.innerHTML = getStyledObjHtml(currVal || "-", id); 
                                 else this.innerText = currVal || "-"; 
                             }
                         };

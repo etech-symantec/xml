@@ -1792,7 +1792,29 @@ function renderPolicyLayer() {
     }
 }
 
-// 4. Policy 셀 클릭 시 조건별 드롭다운 띄우기 로직
+// --- [신규] Policy 테이블 내 객체 뱃지 스타일 적용 헬퍼 함수 ---
+function getStyledObjHtml(val) {
+    if (!val || val === '-' || ['Any','None','Allow','Deny','Force Deny','Appliance','WSS','Universal'].includes(val)) {
+        return val; // 기본 텍스트나 액션/타겟 값은 뱃지 없이 텍스트만 출력
+    }
+    
+    let found = allObjNames.find(o => o.name === val);
+    let type = found ? found.type : 'Unknown';
+    
+    // Basic Object와 동일한 컬러 매핑 적용
+    let b = 'bg-secondary';
+    let tLower = type.toLowerCase();
+    if (tLower === 'url list') b = 'bg-primary';
+    else if (tLower === 'ip') b = 'bg-success';
+    else if (['a-url', 'hdr-obj', 'app-url', 'categorylist4'].includes(tLower)) b = 'bg-info text-dark';
+    else if (['time', 'htm-ntfy', 'dny-exc', 'dny-obj'].includes(tLower)) b = 'bg-warning text-dark';
+    else if (tLower === 'combined') b = 'bg-dark text-white';
+    else b = 'bg-secondary text-white';
+    
+    return `<span class="badge-type ${b}" style="margin-right:6px; padding:3px 6px;">${type}</span> ${val}`;
+}
+
+// 4. Policy 셀 클릭 시 조건별 드롭다운 띄우기 로직 (스타일 및 필터링 업데이트)
 function renderStandardTable(rows, table) {
     const tbody = table.querySelector("tbody"); const thead = table.querySelector("thead");
     const knownCols = {'no':'No.', 'so':'Source', 'de':'Destination', 'se':'Service', 'ac':'Action', 'tr':'Track', 'ep':'Target', 'ti':'Time', 'co':'Comment'};
@@ -1814,13 +1836,19 @@ function renderStandardTable(rows, table) {
                 td.innerText = (i+1); td.style.textAlign="center"; td.style.fontWeight="bold"; td.style.background="#f8f9fa"; 
             } else { 
                 let cellVal = colData[id] || "-";
-                td.innerText = cellVal; 
+                
+                // [변경] Comment 제외하고 모든 값에 타입 뱃지 스타일 적용
+                if (id !== 'co') {
+                    td.innerHTML = getStyledObjHtml(cellVal);
+                } else {
+                    td.innerText = cellVal; 
+                }
                 if(!colData[id]) td.style.color="#94a3b8"; 
                 
                 // [클릭 이벤트] 객체 선택 드롭다운 생성 (조건에 따른 필터링 적용)
                 td.onclick = function(e) {
                     if(this.querySelector("input") || this.querySelector("select")) return;
-                    let currVal = this.innerText === "-" ? "" : this.innerText;
+                    let currVal = colData[id] || ""; // 원본 값 기준
                     this.innerHTML = "";
                     let inputEl;
 
@@ -1838,8 +1866,8 @@ function renderStandardTable(rows, table) {
                         let defaults = [];
                         if(id==='ac') defaults = ['None','Allow','Deny','Force Deny'];
                         else if(id==='tr') defaults = ['None'];
-                        else if(id==='ep') defaults = ['Appliance', 'WSS'];
-                        else defaults = ['Any']; // so, de, se, ti
+                        else if(id==='ep') defaults = ['Appliance', 'Universal', 'WSS', 'None']; // Target 제한
+                        else defaults = ['Any']; 
                         
                         // ===== 항목별 허용 객체(Type) 매핑 로직 =====
                         let validTypes = [];
@@ -1852,27 +1880,32 @@ function renderStandardTable(rows, table) {
                             const curLayer = xmlDoc.getElementsByTagName("layer")[currentLayerIndex];
                             const lType = curLayer.getAttribute("layertype") || "";
                             
-                            // 공통 Action 허용 객체
-                            validTypes = ['acc-log-fac', 'bw-mgmt', 'dny-exc', 'dny-obj', 'htm-ntfy'];
+                            validTypes = ['acc-log-fac']; // 공통 허용 (로깅)
                             
-                            // Layer별 특수 Action 객체 허용
-                            if (lType.includes("AdminAuthentication")) validTypes.push('adm-auth-obj');
-                            else if (lType.includes("WebContent")) validTypes.push('scan', 'process-request');
-                            else if (lType.includes("SSLIntercept")) validTypes.push('ssl-fwd-prxy', 'ssl-fwd-prxy522');
-                            else if (lType.includes("SSLAccess")) validTypes.push('svr-cert-valdn', 'client-encrypted-tap');
+                            if (lType.includes("SSLIntercept") || lType.includes("SSLAccess")) {
+                                // [변경] SSL 레이어에서는 제한된 객체만 사용 가능
+                                if (lType.includes("SSLIntercept")) validTypes.push('ssl-fwd-prxy', 'ssl-fwd-prxy522');
+                                if (lType.includes("SSLAccess")) validTypes.push('svr-cert-valdn', 'client-encrypted-tap');
+                            } else {
+                                // Web 관련 레이어에서는 차단/인증 관련 객체 사용 가능
+                                validTypes.push('bw-mgmt', 'dny-exc', 'dny-obj', 'htm-ntfy');
+                                if (lType.includes("AdminAuthentication")) validTypes.push('adm-auth-obj');
+                                if (lType.includes("WebContent")) validTypes.push('scan', 'process-request');
+                            }
                         }
 
                         let html = '';
-                        // 1. 기본 옵션 세팅 (Any, Allow, Deny 등)
+                        // 1. 기본 옵션 세팅
                         defaults.forEach(d => html += `<option value="${d}" ${currVal===d?'selected':''}>${d}</option>`);
                         
-                        // 2. 파싱된 객체 중 조건에 맞는 객체만 목록에 추가
+                        // 2. 타겟(ep) 컬럼이 아닐 경우에만 파싱된 객체 매핑
                         if (id !== 'ep') {
                             allObjNames.forEach(obj => {
                                 const objTypeLower = obj.type.toLowerCase();
                                 if (validTypes.includes(objTypeLower)) {
                                     if (!defaults.includes(obj.name)) {
-                                        html += `<option value="${obj.name}" ${currVal===obj.name?'selected':''}>${obj.name}</option>`;
+                                        // 옵션 목록에서도 [타입]을 표기하여 선택을 도움
+                                        html += `<option value="${obj.name}" ${currVal===obj.name?'selected':''}>[${obj.type}] ${obj.name}</option>`;
                                     }
                                 }
                             });
@@ -1900,19 +1933,28 @@ function renderStandardTable(rows, table) {
                             let newC = xmlDoc.createElement("colItem");
                             newC.setAttribute("id", id);
                             newC.setAttribute("name", newVal);
-                            let t = (['Any','None','Allow','Deny','Force Deny'].includes(newVal)) ? 'String' : 'Condition';
+                            let t = (['Any','None','Allow','Deny','Force Deny','Appliance','WSS','Universal'].includes(newVal)) ? 'String' : 'Condition';
                             newC.setAttribute("type", t);
                             row.appendChild(newC);
                         }
                         
-                        this.innerText = newVal || "-";
+                        // 렌더링 업데이트 시 뱃지 스타일 재적용
+                        if (id !== 'co') this.innerHTML = getStyledObjHtml(newVal || "-");
+                        else this.innerText = newVal || "-";
+                        
                         if(!newVal) this.style.color = "#94a3b8"; else this.style.color = "";
                         colData[id] = newVal;
                     };
                     
                     if(inputEl.tagName === 'INPUT') {
                         inputEl.onblur = saveVal;
-                        inputEl.onkeydown = (k) => { if(k.key==='Enter') saveVal(); else if(k.key==='Escape') this.innerText = currVal||"-"; };
+                        inputEl.onkeydown = (k) => { 
+                            if(k.key==='Enter') saveVal(); 
+                            else if(k.key==='Escape') { 
+                                if(id !== 'co') this.innerHTML = getStyledObjHtml(currVal || "-"); 
+                                else this.innerText = currVal || "-"; 
+                            }
+                        };
                     } else {
                         inputEl.onblur = saveVal;
                         inputEl.onchange = saveVal;

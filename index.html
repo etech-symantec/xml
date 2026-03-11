@@ -1552,24 +1552,68 @@ function parseAllObjects() {
     basicObjects = []; combinedObjects = []; allObjNames = []; globalObjectNames = [];
     const conds = xmlDoc.getElementsByTagName("conditionObjects")[0]; if (!conds) return;
     
-    // Policy 드롭다운을 위해 conditionObjects 안의 모든 객체 이름 수집
     Array.from(conds.children).forEach(child => {
-        if (child.tagName === 'vpm-cat') {
-            for (let n of child.getElementsByTagName("node")) globalObjectNames.push(n.getAttribute('n'));
-        } else {
+        let tagName = child.tagName.toLowerCase();
+        
+        // 1. 카테고리 (URL List) 처리
+        if (tagName === 'vpm-cat') {
+            for (let n of child.getElementsByTagName("node")) {
+                let name = n.getAttribute('n');
+                globalObjectNames.push(name);
+                basicObjects.push({type:'URL List', name: name, value: n.getAttribute('u-l') || '', element: n, attr: 'u-l'});
+                allObjNames.push({name: name, type: 'URL List'});
+            }
+        } 
+        // 2. Combined 객체 처리
+        else if (tagName === 'comb-obj') {
             let name = child.getAttribute('name');
-            if (name) globalObjectNames.push(name);
+            if(name) globalObjectNames.push(name);
+            
+            let m = [];
+            for(let c of child.children) {
+                if(c.getAttribute('n')) m.push(c.getAttribute('n'));
+            }
+            combinedObjects.push({originalIndex: combinedObjects.length, name: name, members: m, element: child});
+            allObjNames.push({name: name, type: 'Combined'});
+        } 
+        // 3. 그 외 모든 객체 동적 파싱 (ipobject, a-url, hdr-obj, time, htm-ntfy 등)
+        else {
+            let name = child.getAttribute('name');
+            if(!name) return; // name 속성이 없는 경우는 무시
+            globalObjectNames.push(name);
+            
+            let typeStr = tagName;
+            let valStr = '';
+            let editAttr = null; // 수정 가능한 대상 속성
+            
+            if (tagName === 'ipobject') {
+                typeStr = 'IP'; valStr = child.getAttribute('value') || ''; editAttr = 'value';
+            } else if (tagName === 'a-url') {
+                editAttr = child.hasAttribute('d') ? 'd' : (child.hasAttribute('r') ? 'r' : 'h');
+                valStr = child.getAttribute(editAttr) || '';
+            } else if (tagName === 'hdr-obj') {
+                valStr = child.getAttribute('v') || ''; editAttr = 'v';
+            } else if (tagName === 'time') {
+                editAttr = child.hasAttribute('time') ? 'time' : 'absoluterange';
+                valStr = child.getAttribute(editAttr) || '';
+            } else if (tagName === 'htm-ntfy') {
+                valStr = child.getAttribute('h-b') || ''; editAttr = 'h-b';
+            } else {
+                // 그 외의 복잡한 객체들은 모든 속성(key=value)을 수집하여 표시 (읽기 전용)
+                let attrs = [];
+                for(let i=0; i<child.attributes.length; i++) {
+                    let a = child.attributes[i];
+                    if(a.name !== 'name') attrs.push(`${a.name}="${a.value}"`);
+                }
+                valStr = attrs.join('\n');
+                editAttr = null; // 편집 불가 처리
+            }
+            
+            basicObjects.push({type: typeStr, name: name, value: valStr, element: child, attr: editAttr});
+            allObjNames.push({name: name, type: typeStr});
         }
     });
-    globalObjectNames.sort((a,b) => a.toLowerCase().localeCompare(b.toLowerCase())); // 알파벳 순 정렬
-
-    for (let n of conds.getElementsByTagName("node")) { basicObjects.push({type:'URL List', name:n.getAttribute('n'), value:n.getAttribute('u-l'), element:n, attr:'u-l'}); allObjNames.push({name:n.getAttribute('n'), type:'URL List'}); }
-    for (let ip of conds.getElementsByTagName("ipobject")) { basicObjects.push({type:'IP', name:ip.getAttribute('name'), value:ip.getAttribute('value'), element:ip, attr:'value'}); allObjNames.push({name:ip.getAttribute('name'), type:'IP'}); }
-    const combs = conds.getElementsByTagName("comb-obj");
-    for (let i=0; i<combs.length; i++) {
-        let m=[]; for(let c of combs[i].children) if(c.getAttribute('n')) m.push(c.getAttribute('n'));
-        combinedObjects.push({originalIndex:i, name:combs[i].getAttribute('name'), members:m, element:combs[i]}); allObjNames.push({name:combs[i].getAttribute('name'), type:'Combined'});
-    }
+    globalObjectNames.sort((a,b) => a.toLowerCase().localeCompare(b.toLowerCase())); // 드롭다운용 정렬
     applyCombinedFilter();
 }
 
@@ -1588,25 +1632,42 @@ function setBasicObjFilter(type, el) {
 
 function applyBasicFilter(){ currentBasicPage=1; renderBasicTable(); }
 
-function renderBasicTable(){ 
-    const s=document.getElementById('objSearch').value.toLowerCase().trim();
-    const tb=document.getElementById("basicObjTableBody");
-    let f=basicObjects.filter(o=>(currentBasicObjFilter==="All"||o.type===currentBasicObjFilter)&&o.name.toLowerCase().includes(s));
-    tb.innerHTML=""; document.getElementById("basicTotalCount").innerText=`Total: ${f.length}`;
-    if(f.length===0){tb.innerHTML=`<tr><td colspan="4" style="text-align:center; padding:20px;">검색 결과 없음</td></tr>`; return;}
+function renderBasicTable() { 
+    const s = document.getElementById('objSearch').value.toLowerCase().trim();
+    const tb = document.getElementById("basicObjTableBody");
     
-    f.slice((currentBasicPage-1)*itemsPerPage, currentBasicPage*itemsPerPage).forEach(o=>{
-        let b = o.type==='URL List' ? 'bg-primary' : (o.type==='IP' ? 'bg-success' : 'bg-warning text-dark');
+    // Filter 로직: All이거나 타입이 일치할 때
+    let f = basicObjects.filter(o => (currentBasicObjFilter === "All" || o.type === currentBasicObjFilter) && o.name.toLowerCase().includes(s));
+    tb.innerHTML = ""; 
+    document.getElementById("basicTotalCount").innerText = `Total: ${f.length}`;
+    
+    if (f.length === 0) { 
+        tb.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px;">검색 결과 없음</td></tr>`; 
+        return; 
+    }
+    
+    f.slice((currentBasicPage-1)*itemsPerPage, currentBasicPage*itemsPerPage).forEach(o => {
+        // 타입별 뱃지 색상 자동화
+        let b = 'bg-secondary';
+        if (o.type === 'URL List') b = 'bg-primary';
+        else if (o.type === 'IP') b = 'bg-success';
+        else if (o.type === 'a-url' || o.type === 'hdr-obj') b = 'bg-info text-dark';
+        else if (o.type === 'time' || o.type === 'htm-ntfy') b = 'bg-warning text-dark';
         
-        // 데이터 줄 수에 따라 텍스트박스 기본 높이 조정 (최소 1줄 ~ 최대 4줄)
+        // 텍스트 줄 수에 따른 높이 동적 조절
         let lineCount = (o.value.match(/\n/g) || []).length + 1;
         let rows = lineCount > 4 ? 4 : lineCount;
+        
+        // editAttr이 없는 기타 객체는 읽기 전용 스타일 적용
+        let readonlyAttr = o.attr ? '' : 'readonly';
+        let bgStyle = o.attr ? '' : 'background-color: #f8f9fa; color: #64748b; border-style: dashed;';
+        let titleTip = o.attr ? '' : 'title="복합 속성을 가진 객체로 이 화면에서는 읽기 전용입니다."';
         
         tb.innerHTML += `<tr>
             <td style="text-align:center;"><span class="badge-type ${b}">${o.type}</span></td>
             <td style="font-weight:bold;">${o.name}</td>
             <td>
-                <textarea style="width:100%; border:1px solid #cbd5e1; border-radius:4px; font-size:0.75rem; padding:4px 6px; resize:vertical; outline:none; font-family:monospace; line-height:1.4;" rows="${rows}" onchange="updateBasicVal(this,'${o.name}')">${o.value}</textarea>
+                <textarea ${titleTip} style="width:100%; border:1px solid #cbd5e1; border-radius:4px; font-size:0.75rem; padding:4px 6px; resize:vertical; outline:none; font-family:monospace; line-height:1.4; ${bgStyle}" rows="${rows}" onchange="updateBasicVal(this,'${o.name}')" ${readonlyAttr}>${o.value}</textarea>
             </td>
             <td style="text-align:center;">
                 <button style="border:none; background:transparent; color:#ef4444; font-size:1.1rem; cursor:pointer;" onclick="deleteBasicObject('${o.name}')" title="삭제">🗑</button>

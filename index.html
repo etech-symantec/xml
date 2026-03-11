@@ -304,6 +304,82 @@
     .split-container { flex-direction: column; height: auto; min-height: 0; }
     .panel { height: 500px; }
   }
+  
+  /* =========================================
+     [신규] VPM Editor View 및 모달/테이블 스타일
+     ========================================= */
+  #vpm-editor-view { display: none; animation: fadeIn 0.3s ease; }
+  
+  .section { background: white; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+  .section-header { background: #1e3a5f; color: white; padding: 6px 12px; border-radius: 8px 8px 0 0; font-weight: bold; }
+  .editor-main { display: flex; gap: 16px; padding: 0px 16px 16px; flex-direction: column;}
+  h3.editor-title { font-size: 1.1rem; margin-bottom: 0; color: #343a40; }
+  
+  .custom-tabs { display: flex; flex-wrap: wrap; padding-left: 0; margin-bottom: 0; list-style: none; border-bottom: 1px solid #dee2e6; }
+  .custom-tabs .nav-item { margin-bottom: -1px; }
+  .custom-tabs .nav-link { 
+      border: 1px solid #dee2e6; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; 
+      background-color: #e9ecef; color: #6c757d; padding: 6px 12px; font-size: 0.75rem; margin-right: 4px; cursor: pointer; transition: all 0.2s;
+      display: block; text-decoration: none;
+  }
+  .custom-tabs .nav-link:hover { background-color: #dee2e6; color: #495057; }
+  .custom-tabs .nav-link.active { color: #0d6efd; background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; border-top: 3px solid #0d6efd; font-weight: bold; z-index: 2; }
+
+  .filter-tabs { display: flex; list-style: none; padding:0; margin:0;}
+  .filter-tabs .nav-link { border-radius: 20px; padding: 2px 10px; font-size: 0.7rem; color: #495057; background-color: white; border: 1px solid #dee2e6; margin-right: 4px; cursor: pointer; display: block; text-decoration: none;}
+  .filter-tabs .nav-link.active { background-color: #495057; color: white; border-color: #495057; }
+
+  .content-container { height: 650px; border: 1px solid #dee2e6; border-top: none; overflow: hidden; display: flex; flex-direction: column; background-color: #fff; }
+  .table-wrapper { overflow: auto; flex: 1; }
+  .vpm-table { width:100%; border-collapse: collapse; font-size: 0.7rem; margin-bottom: 0; }
+  .vpm-table th { background-color: #343a40; color: white; position: sticky; top: 0; z-index: 10; white-space: nowrap; padding: 4px 6px; border: 1px solid #dee2e6;}
+  .vpm-table td { padding: 3px 6px; vertical-align: middle; border: 1px solid #dee2e6; height: 26px; }
+
+  .disabled-row, .disabled-row > td { background-color: #f1f3f5 !important; color: #adb5bd !important; font-style: italic; }
+  .vpm-table tbody tr.disabled-row:hover > * { background-color: #e9ecef !important; }
+
+  .combined-layout { display: flex; height: 100%; }
+  .combined-list-area { width: 30%; border-right: 1px solid #dee2e6; display: flex; flex-direction: column; background-color: #f8f9fa; }
+  .combined-list-scroll { flex: 1; overflow-y: auto; }
+  .combined-detail { width: 70%; padding: 10px; overflow-y: auto; background-color: #fff; }
+  
+  .list-group-item { cursor: pointer; font-size: 0.75rem; padding: 6px 10px; border-bottom:1px solid #dee2e6; display:flex; justify-content:space-between;}
+  .list-group-item:hover { background-color: #f8f9fa; }
+  .list-group-item.active { background-color: #e8f0fe !important; color: #0d6efd !important; border-left: 3px solid #0d6efd !important; font-weight:bold;}
+  .member-card { border: 1px solid #dee2e6; border-radius: 4px; padding: 4px 8px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; background-color: white; font-size: 0.75rem; }
+  .editor-toolbar { background-color: #f8f9fa; border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6; padding: 6px 10px; display:flex; justify-content:space-between; align-items:center;}
+  .badge-type { font-size: 0.7em; min-width: 45px; display: inline-block; text-align: center; padding: 2px 4px; border-radius:4px;}
+  .cpl-editor { width: 100%; height: 100%; background-color: #2b2b2b; color: #f8f8f2; border: none; resize: none; outline: none; padding: 10px; font-family: Consolas, monospace; font-size: 0.8rem; }
+  .inline-input { width: 100%; border: 2px solid #0d6efd; font-size: 0.7rem; padding: 0 4px; }
+  
+  .context-menu { display: none; position: absolute; z-index: 2000; background-color: white; border: 1px solid #ccc; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); border-radius: 3px; min-width: 140px; font-size: 0.75rem; }
+  .context-menu-item { padding: 6px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
+  .context-menu-item:hover { background-color: #f1f3f5; color: #0d6efd; }
+  
+  .d-flex { display: flex;}
+  .gap-2 { gap: 0.5rem;}
+  .gap-3 { gap: 1rem;}
+  .align-items-center { align-items: center;}
+  .w-100 { width: 100%;}
+  .bg-primary { background-color: #0d6efd; color:white;}
+  .bg-success { background-color: #198754; color:white;}
+  .bg-warning { background-color: #ffc107; color:black;}
+  .fw-bold { font-weight: bold;}
+  
+  /* Pagination */
+  .pagination { display: flex; list-style: none; padding: 0; margin: 0; gap: 2px;}
+  .page-item .page-link { border: 1px solid #dee2e6; padding: 4px 8px; cursor: pointer; background:white; font-size: 0.7rem; border-radius:4px;}
+  .page-item.active .page-link { background: #0d6efd; color: white; border-color: #0d6efd; }
+  .page-item.disabled .page-link { background: #f8f9fa; color: #6c757d; cursor: not-allowed; }
+
+  /* 모달 스타일 임시 */
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1050; }
+  .modal.show { display: block; }
+  .modal-dialog { position: relative; margin: 1.75rem auto; max-width: 500px; background: white; border-radius: 8px; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15); }
+  .modal-dialog.modal-lg { max-width: 800px; }
+  .modal-content { padding: 20px; }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dee2e6; padding-bottom: 10px; margin-bottom: 10px; }
+  .btn-close { background: transparent; border: 0; font-size: 1.2rem; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -318,6 +394,7 @@
     <div class="top-bar">
       <div class="left-btns">
         <button id="btn-show-tree" class="primary-btn" onclick="switchView('tree')">XML 트리 보기</button>
+        <button id="btn-show-editor" onclick="switchView('editor')">🛠️ XML ➔ VPM 에디터</button>
         <button id="btn-show-converter" onclick="switchView('converter')">⚡ 소만사 ➔ 시만텍 컨버터</button>
       </div>
       <div class="right-btns" id="tree-controls">
@@ -873,29 +950,190 @@ end policy &quot;HTTP이름&quot;
 
       </div>
     </section>
+    
+    <section id="vpm-editor-view">
+        <div class="editor-toolbar mb-3 border rounded">
+            <div class="d-flex align-items-center gap-3">
+                <h3 class="editor-title">🛡️ VPM Editor</h3>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span style="font-size:0.8rem; color:#6c757d;">File:</span>
+                <input type="file" id="fileInput" accept=".xml,.txt" style="font-size:0.8rem;">
+                <button class="btn-convert" style="padding:6px 12px;" onclick="downloadXML()">💾 XML 저장</button>
+            </div>
+        </div>
+
+        <ul class="custom-tabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" onclick="switchEditorTab('basicObjects', this)">📦 Basic Objects</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchEditorTab('combinedObjects', this)">🧩 Combined Objects</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="switchEditorTab('policy', this)">📜 Policy</a></li>
+        </ul>
+
+        <div class="editor-main border border-top-0 bg-white" style="height: 650px;">
+            
+            <div id="editor-basicObjects" style="display: block; height:100%; display:flex; flex-direction:column;">
+                <div class="editor-toolbar mt-2 rounded">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="font-size:0.8rem; font-weight:bold; color:#6c757d;">Filter:</span>
+                        <ul class="filter-tabs" id="objTypeTabs">
+                            <li><a class="nav-link active" onclick="setBasicObjFilter('All', this)">All</a></li>
+                            <li><a class="nav-link" onclick="setBasicObjFilter('URL List', this)">URL List</a></li>
+                            <li><a class="nav-link" onclick="setBasicObjFilter('IP', this)">IP Address</a></li>
+                        </ul>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <select id="rowsPerPage" style="font-size:0.8rem; padding:4px;" onchange="changeItemsPerPage()">
+                            <option value="50" selected>50개</option>
+                            <option value="100">100개</option>
+                            <option value="500">500개</option>
+                        </select>
+                        <input type="text" id="objSearch" placeholder="Name Search" style="font-size:0.8rem; padding:4px;" onkeypress="if(event.key==='Enter') applyBasicFilter()">
+                        <button style="font-size:0.8rem; padding:4px 8px; border:1px solid #ccc; background:#fff; border-radius:4px;" onclick="applyBasicFilter()">🔍</button>
+                        <button style="font-size:0.8rem; padding:4px 8px; border:1px solid #198754; color:#198754; background:#fff; border-radius:4px;" onclick="openAddModal()">➕ 추가</button>
+                    </div>
+                </div>
+                
+                <div class="table-wrapper mt-2 border">
+                    <table class="vpm-table">
+                        <thead><tr><th width="10%">Type</th><th width="25%">Name</th><th width="60%">Value</th><th width="5%">Del</th></tr></thead>
+                        <tbody id="basicObjTableBody"><tr><td colspan="4" style="text-align:center; padding:30px; color:#6c757d;">파일을 업로드하세요.</td></tr></tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <span id="basicTotalCount" style="font-size:0.8rem; font-weight:bold; color:#6c757d;">Total: 0</span>
+                    <ul class="pagination" id="paginationControls"></ul>
+                </div>
+            </div>
+
+            <div id="editor-combinedObjects" style="display: none; height:100%; flex-direction:column;">
+                <div class="editor-toolbar mt-2 rounded">
+                    <div class="d-flex gap-2">
+                        <input type="text" id="combSearch" placeholder="그룹 이름 검색" style="font-size:0.8rem; padding:4px;" onkeypress="if(event.key==='Enter') applyCombinedFilter()">
+                        <button style="font-size:0.8rem; padding:4px 8px; border:1px solid #ccc; background:#fff; border-radius:4px;" onclick="applyCombinedFilter()">🔍</button>
+                    </div>
+                    <button style="font-size:0.8rem; padding:4px 8px; border:1px solid #0d6efd; color:#0d6efd; background:#fff; border-radius:4px;" onclick="addCombinedGroup()">➕ 새 그룹</button>
+                </div>
+                <div class="combined-layout mt-2 border rounded">
+                    <div class="combined-list-area">
+                        <div class="combined-list-scroll" id="combinedListGroup"><div style="padding:15px; text-align:center; color:#6c757d;">파일 업로드 필요</div></div>
+                        <div style="padding:10px; border-top:1px solid #dee2e6; background:white; display:flex; justify-content:center;"><ul class="pagination" id="combListPagination"></ul></div>
+                    </div>
+                    <div class="combined-detail">
+                        <div id="combinedDetailView" style="display:none;">
+                            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #dee2e6; padding-bottom:10px; margin-bottom:10px;">
+                                <div><h4 id="selectedCombName" style="margin:0; font-size:1rem; color:#0d6efd;">Name</h4><span style="font-size:0.7rem; color:#6c757d;">Combined Object</span></div>
+                                <button style="font-size:0.8rem; padding:4px 8px; border:none; color:white; background:#dc3545; border-radius:4px;" onclick="deleteCurrentGroup()">🗑 삭제</button>
+                            </div>
+                            <h6 style="font-weight:bold; margin-bottom:8px;">📂 포함된 객체 (Members)</h6>
+                            <div id="memberListArea"></div>
+                            <div style="text-align:center; margin-top:10px;"><button style="width:100%; padding:6px; background:#0d6efd; color:white; border:none; border-radius:4px;" onclick="openMemberSelectModal()">➕ 멤버 추가</button></div>
+                        </div>
+                        <div id="combinedEmptyState" style="text-align:center; color:#6c757d; margin-top:50px;">👈 왼쪽에서 그룹을 선택하세요</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="editor-policy" style="display: none; height:100%; flex-direction:column;">
+                <div style="display:flex; border-bottom:1px solid #dee2e6; padding-top:10px; align-items:end;">
+                    <ul class="custom-tabs" id="layerTabs" style="border-bottom:none; flex-grow:1;">
+                        <li><span style="font-size:0.8rem; padding:8px; color:#6c757d;">파일 업로드 필요</span></li>
+                    </ul>
+                    <button style="margin-bottom:4px; font-size:0.8rem; padding:4px 8px; border:1px solid #6c757d; background:#fff; border-radius:4px;" onclick="addNewLayer()">➕ Layer</button>
+                </div>
+                <div class="editor-toolbar mt-2 rounded">
+                    <div><span id="layerTypeBadge" class="badge-type bg-primary">Type</span> <span id="layerInfo" style="font-weight:bold; font-size:0.9rem; color:#0d6efd;">Info</span></div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:0.75rem; color:#6c757d;">💡 테이블 행 우클릭: 룰 추가/삭제</span>
+                        <button style="font-size:0.8rem; padding:2px 8px; border:1px solid #dc3545; color:#dc3545; background:#fff; border-radius:4px;" onclick="deleteCurrentLayer()">🗑 Layer 삭제</button>
+                    </div>
+                </div>
+                <div class="table-wrapper mt-2 border rounded" id="policyContainer" style="display:flex; flex-direction:column;"></div>
+            </div>
+
+        </div>
+    </section>
+
+    <div id="policyContextMenu" class="context-menu">
+        <div class="context-menu-item" onclick="insertRuleAt(-1)">🔼 위쪽에 룰 추가</div>
+        <div class="context-menu-item" onclick="insertRuleAt(1)">🔽 아래쪽에 룰 추가</div>
+        <div class="context-menu-item" onclick="toggleDisableRule()">🚫 활성/비활성 토글</div>
+        <div class="context-menu-item" style="color:red;" onclick="deleteTargetRule()">🗑 이 룰 삭제</div>
+    </div>
+
+    <div class="modal" id="addBasicModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 style="margin:0; font-size:1rem;">객체 추가</h5>
+                    <button class="btn-close" onclick="closeAddModal()">X</button>
+                </div>
+                <div>
+                    <select id="newObjType" class="form-control mb-2"><option value="URL List">URL List</option><option value="IP">IP Address</option></select>
+                    <input type="text" id="newObjName" class="form-control mb-2" placeholder="이름" style="width:100%; margin-top:8px; padding:6px;">
+                    <textarea id="newObjValue" class="form-control" rows="4" placeholder="값" style="width:100%; margin-top:8px; padding:6px;"></textarea>
+                    <button style="width:100%; background:#0d6efd; color:white; border:none; padding:8px; margin-top:12px; border-radius:4px;" onclick="addBasicObject()">추가</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="memberSelectModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 style="margin:0; font-size:1rem;">멤버 추가</h5>
+                    <button class="btn-close" onclick="closeMemberSelectModal()">X</button>
+                </div>
+                <div>
+                    <div class="d-flex gap-2" style="margin-bottom:10px;">
+                        <input type="text" id="memberSearchInput" class="form-control" placeholder="검색 (Enter)" style="flex-grow:1; padding:6px;" onkeypress="if(event.key==='Enter') searchMemberCandidates()">
+                        <button style="padding:6px 12px; background:#6c757d; color:white; border:none; border-radius:4px;" onclick="searchMemberCandidates()">검색</button>
+                    </div>
+                    <div style="height:350px; overflow-y:auto; border:1px solid #dee2e6;">
+                        <table class="vpm-table" style="width:100%;">
+                            <tbody id="memberCandidateBody"><tr><td style="text-align:center; padding:20px; color:#6c757d;">검색어를 입력하세요.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
   </div>
 
 <script>
-// --- 화면 전환 로직 ---
+// --- 화면 전환 로직 (3개 뷰 지원) ---
 function switchView(viewName) {
   const treeView = document.getElementById('tree-view');
   const converterView = document.getElementById('converter-view');
+  const editorView = document.getElementById('vpm-editor-view');
+  
   const btnTree = document.getElementById('btn-show-tree');
   const btnConverter = document.getElementById('btn-show-converter');
+  const btnEditor = document.getElementById('btn-show-editor');
   const treeControls = document.getElementById('tree-controls');
 
-  if (viewName === 'converter') {
-    treeView.style.display = 'none';
-    converterView.style.display = 'block';
-    btnConverter.classList.add('primary-btn');
-    btnTree.classList.remove('primary-btn');
-    treeControls.style.display = 'none';
-  } else {
+  btnTree.classList.remove('primary-btn');
+  btnConverter.classList.remove('primary-btn');
+  btnEditor.classList.remove('primary-btn');
+
+  if (viewName === 'tree') {
     treeView.style.display = 'block';
     converterView.style.display = 'none';
+    editorView.style.display = 'none';
     btnTree.classList.add('primary-btn');
-    btnConverter.classList.remove('primary-btn');
     treeControls.style.display = 'flex';
+  } else if (viewName === 'converter') {
+    treeView.style.display = 'none';
+    converterView.style.display = 'block';
+    editorView.style.display = 'none';
+    btnConverter.classList.add('primary-btn');
+    treeControls.style.display = 'none';
+  } else if (viewName === 'editor') {
+    treeView.style.display = 'none';
+    converterView.style.display = 'none';
+    editorView.style.display = 'block';
+    btnEditor.classList.add('primary-btn');
+    treeControls.style.display = 'none';
   }
 }
 
@@ -1149,6 +1387,209 @@ function setAll(openState) {
     d.open = openState;
   });
 }
+
+// ==========================================================
+// VPM Editor 통합 로직
+// ==========================================================
+let xmlDoc = null;
+let basicObjects = [], combinedObjects = [], allObjNames = [];
+let currentBasicPage = 1, currentCombListPage = 1, itemsPerPage = 50;
+let selectedCombIndex = -1, filteredCombinedObjects = [];
+let currentLayerIndex = 0;
+let currentBasicObjFilter = "All";
+let contextMenuTargetRowIndex = -1; 
+let contextMenuTargetRowElement = null;
+
+// --- VPM Editor 탭 전환 ---
+function switchEditorTab(tabId, el) {
+    document.querySelectorAll('.custom-tabs .nav-link').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('editor-basicObjects').style.display = 'none';
+    document.getElementById('editor-combinedObjects').style.display = 'none';
+    document.getElementById('editor-policy').style.display = 'none';
+    document.getElementById('editor-' + tabId).style.display = 'flex';
+}
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) { loadXMLFromString(e.target.result); };
+    reader.readAsText(file);
+});
+
+function loadXMLFromString(xmlString) {
+    const parser = new DOMParser();
+    xmlDoc = parser.parseFromString(xmlString, "text/xml");
+    if(xmlDoc.getElementsByTagName("parsererror").length > 0) { alert("XML 파싱 오류"); return; }
+    parseAllObjects();
+    initLayerTabs();
+    renderBasicTable();
+}
+
+function parseAllObjects() {
+    basicObjects = []; combinedObjects = []; allObjNames = [];
+    const conds = xmlDoc.getElementsByTagName("conditionObjects")[0]; if (!conds) return;
+    for (let n of conds.getElementsByTagName("node")) { basicObjects.push({type:'URL List', name:n.getAttribute('n'), value:n.getAttribute('u-l'), element:n, attr:'u-l'}); allObjNames.push({name:n.getAttribute('n'), type:'URL List'}); }
+    for (let ip of conds.getElementsByTagName("ipobject")) { basicObjects.push({type:'IP', name:ip.getAttribute('name'), value:ip.getAttribute('value'), element:ip, attr:'value'}); allObjNames.push({name:ip.getAttribute('name'), type:'IP'}); }
+    const combs = conds.getElementsByTagName("comb-obj");
+    for (let i=0; i<combs.length; i++) {
+        let m=[]; for(let c of combs[i].children) if(c.getAttribute('n')) m.push(c.getAttribute('n'));
+        combinedObjects.push({originalIndex:i, name:combs[i].getAttribute('name'), members:m, element:combs[i]}); allObjNames.push({name:combs[i].getAttribute('name'), type:'Combined'});
+    }
+    applyCombinedFilter();
+}
+
+function changeItemsPerPage() {
+    itemsPerPage = parseInt(document.getElementById("rowsPerPage").value, 10);
+    currentBasicPage = 1; currentCombListPage = 1;
+    renderBasicTable(); if(filteredCombinedObjects.length > 0) renderCombinedList(); 
+}
+
+function setBasicObjFilter(type, el) {
+    currentBasicObjFilter = type;
+    document.querySelectorAll('#objTypeTabs .nav-link').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentBasicPage = 1; renderBasicTable();
+}
+
+function applyBasicFilter(){ currentBasicPage=1; renderBasicTable(); }
+
+function renderBasicTable(){ 
+    const s=document.getElementById('objSearch').value.toLowerCase().trim();
+    const tb=document.getElementById("basicObjTableBody");
+    let f=basicObjects.filter(o=>(currentBasicObjFilter==="All"||o.type===currentBasicObjFilter)&&o.name.toLowerCase().includes(s));
+    tb.innerHTML=""; document.getElementById("basicTotalCount").innerText=`Total: ${f.length}`;
+    if(f.length===0){tb.innerHTML=`<tr><td colspan="4" style="text-align:center; padding:20px;">검색 결과 없음</td></tr>`; return;}
+    f.slice((currentBasicPage-1)*itemsPerPage, currentBasicPage*itemsPerPage).forEach(o=>{
+        let b=o.type==='URL List'?'bg-primary':(o.type==='IP'?'bg-success':'bg-warning text-dark');
+        tb.innerHTML+=`<tr><td style="text-align:center;"><span class="badge-type ${b}">${o.type}</span></td><td style="font-weight:bold;">${o.name}</td><td><input type="text" style="width:100%; border:1px solid #ccc; font-size:0.7rem; padding:2px;" value="${o.value}" onchange="updateBasicVal(this,'${o.name}')"></td><td style="text-align:center;">-</td></tr>`;
+    });
+    renderPagination("paginationControls", f.length, currentBasicPage, 'changeBasicPage');
+}
+
+function updateBasicVal(el,n){const o=basicObjects.find(x=>x.name===n); if(o){o.value=el.value; o.element.setAttribute(o.attr, el.value);}}
+function changeBasicPage(p) { currentBasicPage = p; renderBasicTable(); }
+
+function applyCombinedFilter(){ const s=document.getElementById('combSearch').value.toLowerCase().trim(); filteredCombinedObjects=combinedObjects.filter(o=>o.name.toLowerCase().includes(s)); currentCombListPage=1; renderCombinedList(); }
+function renderCombinedList(){
+    const l=document.getElementById("combinedListGroup"); l.innerHTML=""; 
+    if(filteredCombinedObjects.length===0){l.innerHTML=`<div style="padding:15px; text-align:center;">없음</div>`; document.getElementById("combListPagination").innerHTML=""; return;}
+    const start=(currentCombListPage-1)*itemsPerPage;
+    filteredCombinedObjects.slice(start, start+itemsPerPage).forEach((o,i)=>{
+        const gIdx=start+i;
+        l.innerHTML+=`<div class="list-group-item ${gIdx===selectedCombIndex?'active':''}" onclick="selectCombined(${gIdx})"><span>${o.name}</span><span style="background:#e2e8f0; padding:2px 6px; border-radius:10px; font-size:0.65rem;">${o.members.length}</span></div>`;
+    });
+    renderPagination("combListPagination", filteredCombinedObjects.length, currentCombListPage, 'changeCombPage');
+}
+function changeCombPage(p) { currentCombListPage = p; renderCombinedList(); }
+
+function selectCombined(idx){
+    selectedCombIndex=idx; renderCombinedList();
+    const o=filteredCombinedObjects[idx]; document.getElementById("combinedEmptyState").style.display="none"; document.getElementById("combinedDetailView").style.display="block"; document.getElementById("selectedCombName").innerText=o.name;
+    const a=document.getElementById("memberListArea"); a.innerHTML="";
+    if(o.members.length===0) a.innerHTML=`<div style="text-align:center; padding:15px; background:#f8f9fa; border:1px solid #dee2e6;">멤버 없음</div>`;
+    else o.members.forEach(m=>{
+        const f=allObjNames.find(x=>x.name===m), t=f?f.type:"Unknown", b=t==='URL List'?'bg-primary':(t==='IP'?'bg-success':'bg-warning text-dark');
+        a.innerHTML+=`<div class="member-card"><div><span class="badge-type ${b}" style="margin-right:8px;">${t}</span><span style="font-weight:bold;">${m}</span></div><button style="border:none; background:transparent; color:#dc3545; cursor:pointer;" onclick="removeMember('${m}')">✕</button></div>`;
+    });
+}
+function removeMember(m){ const o=filteredCombinedObjects[selectedCombIndex]; o.members=o.members.filter(x=>x!==m); for(let c of o.element.children){if(c.getAttribute('n')===m){o.element.removeChild(c);break;}} selectCombined(selectedCombIndex); }
+
+function renderPagination(id, total, curr, funcName) {
+    const nav = document.getElementById(id); nav.innerHTML = ""; const pages = Math.ceil(total / itemsPerPage); if (pages <= 1) return;
+    const li = (text, page, active) => `<li class="page-item ${active?'active':''}"><a class="page-link" onclick="${funcName}(${page})">${text}</a></li>`;
+    nav.innerHTML += li("Prev", Math.max(1, curr-1), false);
+    let start = Math.max(1, curr - 2); let end = Math.min(pages, curr + 2);
+    for (let i = start; i <= end; i++) nav.innerHTML += li(i, i, i === curr);
+    nav.innerHTML += li("Next", Math.min(pages, curr+1), false);
+}
+
+function initLayerTabs() {
+    const layers = xmlDoc.getElementsByTagName("layer");
+    const tabContainer = document.getElementById("layerTabs"); tabContainer.innerHTML = "";
+    for(let i=0; i<layers.length; i++) {
+        const name = layers[i].getElementsByTagName("name")[0]?.textContent.trim() || `Layer ${i+1}`;
+        tabContainer.innerHTML += `<li class="nav-item"><a class="nav-link ${i === currentLayerIndex ? 'active' : ''}" onclick="currentLayerIndex=${i}; initLayerTabs(); renderPolicyLayer();">${name}</a></li>`;
+    }
+    if(layers.length > 0) renderPolicyLayer();
+}
+
+function renderPolicyLayer() {
+    const curLayer = xmlDoc.getElementsByTagName("layer")[currentLayerIndex];
+    const container = document.getElementById("policyContainer"); const info = document.getElementById("layerInfo"); const badge = document.getElementById("layerTypeBadge");
+    container.innerHTML = ""; if(!curLayer) return;
+    const layerName = curLayer.getElementsByTagName("name")[0]?.textContent.trim(); const rawCplNode = curLayer.getElementsByTagName("raw-cpl")[0];
+    if (rawCplNode) {
+        info.innerText = layerName; badge.innerText = "CPL"; badge.className = "badge-type bg-warning text-dark";
+        const txt = rawCplNode.textContent.replace("<![CDATA[","").replace("]]>","");
+        const ta = document.createElement("textarea"); ta.className = "cpl-editor"; ta.value = txt;
+        ta.onchange = function() { rawCplNode.textContent = `<![CDATA[${this.value}]]>`; };
+        container.appendChild(ta);
+    } else {
+        const rows = curLayer.getElementsByTagName("rowItem"); info.innerText = `${layerName} (${rows.length} Rules)`; badge.innerText = "Policy"; badge.className = "badge-type bg-info text-dark";
+        const tableWrapper = document.createElement("div"); tableWrapper.className = "table-wrapper";
+        const table = document.createElement("table"); table.className = "vpm-table";
+        table.innerHTML = `<thead></thead><tbody></tbody>`;
+        tableWrapper.appendChild(table); container.appendChild(tableWrapper); renderStandardTable(rows, table);
+    }
+}
+
+function renderStandardTable(rows, table) {
+    const tbody = table.querySelector("tbody"); const thead = table.querySelector("thead");
+    const knownCols = {'no':'No.', 'so':'Source', 'de':'Destination', 'se':'Service', 'ac':'Action', 'tr':'Track', 'ep':'Target', 'ti':'Time', 'co':'Comment'};
+    let columnIds = new Set(['no']); for(let i=0; i<Math.min(rows.length, 50); i++) { for(let c of rows[i].getElementsByTagName("colItem")) columnIds.add(c.getAttribute("id")); }
+    const standardOrder = ['no', 'so', 'de', 'se', 'ac', 'tr', 'ti', 'ep', 'co']; let finalColOrder = [];
+    standardOrder.forEach(id => { if(columnIds.has(id)) { finalColOrder.push(id); columnIds.delete(id); } }); columnIds.forEach(id => finalColOrder.push(id));
+    let trH = document.createElement("tr"); finalColOrder.forEach(id => { let th = document.createElement("th"); th.innerText = knownCols[id] || id.toUpperCase(); trH.appendChild(th); }); thead.appendChild(trH);
+    
+    for(let i=0; i<Math.min(rows.length, 500); i++) {
+        let row = rows[i]; let tr = document.createElement("tr");
+        if(row.getAttribute("enabled") === "false") tr.classList.add("disabled-row");
+        tr.addEventListener('contextmenu', function(e) { e.preventDefault(); contextMenuTargetRowIndex = i; contextMenuTargetRowElement = row; const cm = document.getElementById("policyContextMenu"); cm.style.display = 'block'; cm.style.left = e.pageX + 'px'; cm.style.top = e.pageY + 'px'; });
+        
+        let colData = {}; for(let c of row.getElementsByTagName("colItem")) colData[c.getAttribute("id")] = c.getAttribute("name");
+        finalColOrder.forEach(id => {
+            let td = document.createElement("td");
+            if(id === 'no') { td.innerText = (i+1); td.style.textAlign="center"; td.style.fontWeight="bold"; td.style.background="#f8f9fa"; } 
+            else { td.innerText = colData[id] || "-"; if(!colData[id]) td.style.color="#adb5bd"; }
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    }
+}
+
+document.addEventListener('click', () => document.getElementById("policyContextMenu").style.display = 'none');
+
+function toggleDisableRule() { if (!contextMenuTargetRowElement) return; const current = contextMenuTargetRowElement.getAttribute("enabled"); contextMenuTargetRowElement.setAttribute("enabled", current === "false" ? "true" : "false"); renderPolicyLayer(); }
+function deleteTargetRule() { if (!contextMenuTargetRowElement || !confirm("룰 삭제?")) return; contextMenuTargetRowElement.parentNode.removeChild(contextMenuTargetRowElement); renderPolicyLayer(); }
+function insertRuleAt(offset) { 
+    const curLayer = xmlDoc.getElementsByTagName("layer")[currentLayerIndex]; 
+    const newRow = xmlDoc.createElement("rowItem"); newRow.setAttribute("enabled", "true"); 
+    ['so', 'de', 'se', 'ac'].forEach(id => { const col = xmlDoc.createElement("colItem"); col.setAttribute("id", id); col.setAttribute("name", id==='ac'?'Allow':'Any'); newRow.appendChild(col); }); 
+    const rows = curLayer.getElementsByTagName("rowItem"); const targetRow = rows[contextMenuTargetRowIndex]; 
+    if (offset === -1) curLayer.insertBefore(newRow, targetRow); else { if (targetRow.nextSibling) curLayer.insertBefore(newRow, targetRow.nextSibling); else curLayer.appendChild(newRow); } 
+    renderPolicyLayer(); 
+}
+function addNewLayer() { const n = prompt("새 레이어 이름:"); if (!n) return; const nl = xmlDoc.createElement("layer"); nl.setAttribute("disabled", "false"); const nt = xmlDoc.createElement("name"); nt.textContent = n; nl.appendChild(nt); xmlDoc.getElementsByTagName("vpmapp")[0].appendChild(nl); const ls = xmlDoc.getElementsByTagName("layer"); currentLayerIndex = ls.length - 1; initLayerTabs(); }
+function deleteCurrentLayer() { if(!confirm("현재 레이어를 삭제하시겠습니까?")) return; const l = xmlDoc.getElementsByTagName("layer")[currentLayerIndex]; l.parentNode.removeChild(l); currentLayerIndex = Math.max(0, currentLayerIndex - 1); initLayerTabs(); }
+
+// --- 모달 동작 로직 ---
+function openAddModal(){ document.getElementById('addBasicModal').classList.add('show'); }
+function closeAddModal(){ document.getElementById('addBasicModal').classList.remove('show'); }
+function openMemberSelectModal(){ document.getElementById('memberSelectModal').classList.add('show'); document.getElementById("memberSearchInput").value=""; document.getElementById("memberCandidateBody").innerHTML=`<tr><td style="text-align:center; padding:20px; color:#6c757d;">검색어를 입력하세요.</td></tr>`;}
+function closeMemberSelectModal(){ document.getElementById('memberSelectModal').classList.remove('show'); }
+
+function addBasicObject(){ const t=document.getElementById("newObjType").value,n=document.getElementById("newObjName").value,v=document.getElementById("newObjValue").value; if(!n)return; const c=xmlDoc.getElementsByTagName("conditionObjects")[0]; let e; if(t==="URL List"){e=xmlDoc.createElement("node");e.setAttribute("n",n);e.setAttribute("u-l",v);e.setAttribute("type","100");}else{e=xmlDoc.createElement("ipobject");e.setAttribute("name",n);e.setAttribute("value",v);} c.appendChild(e); closeAddModal(); parseAllObjects(); }
+function addCombinedGroup(){ const n=prompt("새 그룹 이름:"); if(!n)return; const c=xmlDoc.getElementsByTagName("conditionObjects")[0], e=xmlDoc.createElement("comb-obj"); e.setAttribute("name",n); c.appendChild(e); parseAllObjects(); }
+function deleteCurrentGroup(){ if(confirm("그룹을 삭제하시겠습니까?")){ const o=filteredCombinedObjects[selectedCombIndex]; o.element.parentNode.removeChild(o.element); parseAllObjects(); document.getElementById("combinedDetailView").style.display="none"; } }
+function searchMemberCandidates(){
+    const q=document.getElementById("memberSearchInput").value.toLowerCase(), cg=filteredCombinedObjects[selectedCombIndex], tb=document.getElementById("memberCandidateBody"); tb.innerHTML="";
+    let c=0; for(let i of allObjNames){ if(c>50)break; if(i.name!==cg.name && !cg.members.includes(i.name) && i.name.toLowerCase().includes(q)){ c++; tb.innerHTML+=`<tr><td>${i.type}</td><td>${i.name}</td><td><button style="padding:2px 8px; font-size:0.7rem; background:#0d6efd; color:white; border:none; border-radius:4px;" onclick="addMemberFromModal('${i.name}')">선택</button></td></tr>`; } }
+    if(c===0)tb.innerHTML=`<tr><td colspan="3" style="text-align:center; padding:20px;">검색 결과 없음</td></tr>`;
+}
+function addMemberFromModal(n){ const o=filteredCombinedObjects[selectedCombIndex]; o.members.push(n); const c=xmlDoc.createElement("c-l-1"); c.setAttribute("n",n); o.element.appendChild(c); closeMemberSelectModal(); selectCombined(selectedCombIndex); }
+
+function downloadXML() { if (!xmlDoc) return alert("데이터가 없습니다."); const s = new XMLSerializer(); const b = new Blob([s.serializeToString(xmlDoc)], {type: "text/xml"}); const l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = "vpm_modified.xml"; l.click(); }
 </script>
 
 </body>

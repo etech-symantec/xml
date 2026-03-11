@@ -1632,33 +1632,49 @@ function setBasicObjFilter(type, el) {
 
 function applyBasicFilter(){ currentBasicPage=1; renderBasicTable(); }
 
+// --- Basic Objects 테이블 렌더링 (그룹 필터링 적용) ---
 function renderBasicTable() { 
     const s = document.getElementById('objSearch').value.toLowerCase().trim();
     const tb = document.getElementById("basicObjTableBody");
     
-    // Filter 로직: All이거나 타입이 일치할 때
-    let f = basicObjects.filter(o => (currentBasicObjFilter === "All" || o.type === currentBasicObjFilter) && o.name.toLowerCase().includes(s));
+    // Filter 로직: All이거나, 현재 선택된 그룹에 속하는 type일 때만 표시
+    let f = basicObjects.filter(o => {
+        if (!o.name.toLowerCase().includes(s)) return false;
+        if (currentBasicObjFilter === "All") return true;
+        
+        const t = o.type.toLowerCase();
+        
+        // Others(미분류) 탭일 경우
+        if (currentBasicObjFilter === "Others") {
+            let found = false;
+            for (const types of Object.values(vpmTypeGroups)) {
+                if (types.includes(t)) { found = true; break; }
+            }
+            return !found;
+        }
+        
+        // 특정 그룹 탭일 경우 해당 그룹의 배열 안에 타입이 존재하는지 확인
+        return vpmTypeGroups[currentBasicObjFilter] && vpmTypeGroups[currentBasicObjFilter].includes(t);
+    });
+    
     tb.innerHTML = ""; 
     document.getElementById("basicTotalCount").innerText = `Total: ${f.length}`;
     
     if (f.length === 0) { 
-        tb.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px;">검색 결과 없음</td></tr>`; 
+        tb.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:40px; color:#64748b;">표시할 데이터가 없습니다.</td></tr>`; 
         return; 
     }
     
     f.slice((currentBasicPage-1)*itemsPerPage, currentBasicPage*itemsPerPage).forEach(o => {
-        // 타입별 뱃지 색상 자동화
         let b = 'bg-secondary';
         if (o.type === 'URL List') b = 'bg-primary';
         else if (o.type === 'IP') b = 'bg-success';
         else if (o.type === 'a-url' || o.type === 'hdr-obj') b = 'bg-info text-dark';
         else if (o.type === 'time' || o.type === 'htm-ntfy') b = 'bg-warning text-dark';
         
-        // 텍스트 줄 수에 따른 높이 동적 조절
         let lineCount = (o.value.match(/\n/g) || []).length + 1;
         let rows = lineCount > 4 ? 4 : lineCount;
         
-        // editAttr이 없는 기타 객체는 읽기 전용 스타일 적용
         let readonlyAttr = o.attr ? '' : 'readonly';
         let bgStyle = o.attr ? '' : 'background-color: #f8f9fa; color: #64748b; border-style: dashed;';
         let titleTip = o.attr ? '' : 'title="복합 속성을 가진 객체로 이 화면에서는 읽기 전용입니다."';
@@ -2024,25 +2040,49 @@ function applyPastedXml() {
     }
 }
 
-// --- Basic Objects 필터 버튼 동적 생성 ---
+// --- [신규] 객체 타입 그룹화 매핑 ---
+const vpmTypeGroups = {
+    'Source': ['ip', 'group', 'hdr-act', 'hdr-obj', 'http-req-body', 'appar-data-type', 'user-agent-list'],
+    'Destination': ['ip', 'url list', 'a-url', 'app-url', 'appar-data-type', 'categorylist4', 'file-download', 'host-port', 'op-url'],
+    'Action': ['acc-log-fac', 'bw-mgmt', 'dny-exc', 'dny-obj', 'htm-ntfy', 'adm-auth-obj', 'scan', 'process-request', 'ssl-fwd-prxy', 'ssl-fwd-prxy522', 'svr-cert-valdn', 'client-encrypted-tap'],
+    'Service': ['prot-meth', 'protocol', 'svc-name'],
+    'Time': ['time'],
+    'Track': ['trace-obj']
+};
+
+// --- Basic Objects 필터 버튼 동적 생성 (그룹 기준) ---
 function renderBasicFilterTabs() {
     const tabsContainer = document.getElementById("objTypeTabs");
     
-    // basicObjects 배열에서 중복 없는 유일한 type 목록 추출 후 정렬
-    const uniqueTypes = [...new Set(basicObjects.map(o => o.type))].sort();
-    
-    // 현재 선택된 필터가 새로 불러온 목록에 없으면 'All'로 초기화
-    if (currentBasicObjFilter !== "All" && !uniqueTypes.includes(currentBasicObjFilter)) {
+    // 현재 데이터에 존재하는 타입들을 기반으로 활성화할 그룹 추출
+    const activeGroups = new Set();
+    basicObjects.forEach(o => {
+        const t = o.type.toLowerCase();
+        let isGrouped = false;
+        for (const [group, types] of Object.entries(vpmTypeGroups)) {
+            if (types.includes(t)) {
+                activeGroups.add(group);
+                isGrouped = true;
+            }
+        }
+        // 명시된 그룹에 없는 기타 타입 처리
+        if (!isGrouped) activeGroups.add('Others');
+    });
+
+    // 현재 선택된 필터가 새로 로드된 파일의 활성 그룹에 없으면 'All'로 초기화
+    if (currentBasicObjFilter !== "All" && !activeGroups.has(currentBasicObjFilter)) {
         currentBasicObjFilter = "All";
     }
 
-    // 기본 'All' 버튼
+    // 기본 'All' 버튼 (항상 표시)
     let html = `<li><a class="nav-link ${currentBasicObjFilter === 'All' ? 'active' : ''}" onclick="setBasicObjFilter('All', this)">All</a></li>`;
     
-    // 존재하는 모든 타입에 대해 버튼 생성
-    uniqueTypes.forEach(type => {
-        const isActive = currentBasicObjFilter === type ? 'active' : '';
-        html += `<li><a class="nav-link ${isActive}" onclick="setBasicObjFilter('${type}', this)">${type}</a></li>`;
+    // 존재하는 그룹 버튼만 순서대로 생성 (데이터가 없으면 All만 뜸)
+    ['Source', 'Destination', 'Action', 'Service', 'Time', 'Track', 'Others'].forEach(group => {
+        if (activeGroups.has(group)) {
+            const isActive = currentBasicObjFilter === group ? 'active' : '';
+            html += `<li><a class="nav-link ${isActive}" onclick="setBasicObjFilter('${group}', this)">${group}</a></li>`;
+        }
     });
     
     tabsContainer.innerHTML = html;

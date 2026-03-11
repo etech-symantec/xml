@@ -1884,12 +1884,76 @@ function addNewLayer() { const n = prompt("새 레이어 이름:"); if (!n) retu
 function deleteCurrentLayer() { if(!confirm("현재 레이어를 삭제하시겠습니까?")) return; const l = xmlDoc.getElementsByTagName("layer")[currentLayerIndex]; l.parentNode.removeChild(l); currentLayerIndex = Math.max(0, currentLayerIndex - 1); initLayerTabs(); }
 
 // --- 모달 동작 로직 ---
-function openAddModal(){ document.getElementById('addBasicModal').classList.add('show'); }
+function openAddModal() { 
+    const typeSelect = document.getElementById("newObjType");
+    
+    // 현재 XML에 존재하는 모든 고유 객체 타입 추출 및 정렬
+    const uniqueTypes = [...new Set(basicObjects.map(o => o.type))].sort();
+    
+    // 기본 필수 타입 보장
+    if(!uniqueTypes.includes('URL List')) uniqueTypes.unshift('URL List');
+    if(!uniqueTypes.includes('IP')) uniqueTypes.unshift('IP');
+    
+    // 셀렉트 박스 동적 생성
+    typeSelect.innerHTML = "";
+    uniqueTypes.forEach(type => {
+        typeSelect.innerHTML += `<option value="${type}">${type}</option>`;
+    });
+
+    // 입력 필드 초기화
+    document.getElementById('newObjName').value = '';
+    document.getElementById('newObjValue').value = '';
+    
+    document.getElementById('addBasicModal').classList.add('show'); 
+}
 function closeAddModal(){ document.getElementById('addBasicModal').classList.remove('show'); }
 function openMemberSelectModal(){ document.getElementById('memberSelectModal').classList.add('show'); document.getElementById("memberSearchInput").value=""; document.getElementById("memberCandidateBody").innerHTML=`<tr><td style="text-align:center; padding:20px; color:#6c757d;">검색어를 입력하세요.</td></tr>`;}
 function closeMemberSelectModal(){ document.getElementById('memberSelectModal').classList.remove('show'); }
 
-function addBasicObject(){ const t=document.getElementById("newObjType").value,n=document.getElementById("newObjName").value,v=document.getElementById("newObjValue").value; if(!n)return; const c=xmlDoc.getElementsByTagName("conditionObjects")[0]; let e; if(t==="URL List"){e=xmlDoc.createElement("node");e.setAttribute("n",n);e.setAttribute("u-l",v);e.setAttribute("type","100");}else{e=xmlDoc.createElement("ipobject");e.setAttribute("name",n);e.setAttribute("value",v);} c.appendChild(e); closeAddModal(); parseAllObjects(); }
+// --- 객체 추가 로직 (모든 타입 지원) ---
+function addBasicObject(){ 
+    const t = document.getElementById("newObjType").value;
+    const n = document.getElementById("newObjName").value.trim();
+    const v = document.getElementById("newObjValue").value; 
+    
+    if(!n) { alert("이름을 입력해주세요."); return; }
+    
+    const conds = xmlDoc.getElementsByTagName("conditionObjects")[0]; 
+    if(!conds) return;
+    
+    let e; 
+    if(t === "URL List"){
+        e = xmlDoc.createElement("node");
+        e.setAttribute("n", n);
+        e.setAttribute("u-l", v);
+        
+        // URL List(node)는 vpm-cat 태그 내부에 위치하도록 처리
+        let cat = xmlDoc.getElementsByTagName("vpm-cat")[0];
+        if(!cat) {
+            cat = xmlDoc.createElement("vpm-cat");
+            conds.appendChild(cat);
+        }
+        cat.appendChild(e);
+    } else {
+        // IP 또는 그 외 동적으로 파싱된 모든 객체 타입 생성
+        let tagName = (t === "IP") ? "ipobject" : t;
+        e = xmlDoc.createElement(tagName);
+        e.setAttribute("name", n);
+        
+        // 각 객체 타입별 주로 사용되는 value 속성명 자동 매핑
+        if (t === "IP") e.setAttribute("value", v);
+        else if (t === "a-url") e.setAttribute("d", v);
+        else if (t === "hdr-obj") e.setAttribute("v", v);
+        else if (t === "time") e.setAttribute("time", v);
+        else if (t === "htm-ntfy") e.setAttribute("h-b", v);
+        else e.setAttribute("value", v); // 그 외 알 수 없는 타입의 기본 폴백
+        
+        conds.appendChild(e);
+    }
+    
+    closeAddModal(); 
+    parseAllObjects(); 
+}
 function addCombinedGroup(){ const n=prompt("새 그룹 이름:"); if(!n)return; const c=xmlDoc.getElementsByTagName("conditionObjects")[0], e=xmlDoc.createElement("comb-obj"); e.setAttribute("name",n); c.appendChild(e); parseAllObjects(); }
 function deleteCurrentGroup(){ if(confirm("그룹을 삭제하시겠습니까?")){ const o=filteredCombinedObjects[selectedCombIndex]; o.element.parentNode.removeChild(o.element); parseAllObjects(); document.getElementById("combinedDetailView").style.display="none"; } }
 function searchMemberCandidates(){

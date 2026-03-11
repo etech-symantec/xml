@@ -329,8 +329,9 @@
   .custom-tabs .nav-link:hover { background-color: #e2e8f0; color: #334155; }
   .custom-tabs .nav-link.active { color: var(--accent); background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; border-top: 3px solid var(--accent); font-weight: bold; z-index: 2; }
 
-  .filter-tabs { display: flex; list-style: none; padding:0; margin:0;}
-  .filter-tabs .nav-link { border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; color: #475569; background-color: white; border: 1px solid #cbd5e1; margin-right: 6px; cursor: pointer; display: block; text-decoration: none;}
+  .filter-tabs { display: flex; list-style: none; padding:0; margin:0; flex-wrap: wrap; gap: 6px; }
+  .filter-tabs li { margin-bottom: 2px; }
+  .filter-tabs .nav-link { border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; color: #475569; background-color: white; border: 1px solid #cbd5e1; cursor: pointer; display: block; text-decoration: none;}
   .filter-tabs .nav-link.active { background-color: #475569; color: white; border-color: #475569; font-weight:bold;}
 
   /* Policy 테이블 스타일 테두리 구분 강화 */
@@ -1614,6 +1615,7 @@ function parseAllObjects() {
         }
     });
     globalObjectNames.sort((a,b) => a.toLowerCase().localeCompare(b.toLowerCase())); // 드롭다운용 정렬
+    renderBasicFilterTabs(); // <--- [신규 추가] 파싱 완료 후 존재하는 타입들로 필터 버튼 다시 그리기
     applyCombinedFilter();
 }
 
@@ -1926,6 +1928,30 @@ function applyPastedXml() {
     if (dropZoneText) {
         dropZoneText.innerHTML = `<span style="color:var(--accent); font-weight:bold;">수동 입력된 XML 데이터</span>`;
     }
+}
+
+// --- Basic Objects 필터 버튼 동적 생성 ---
+function renderBasicFilterTabs() {
+    const tabsContainer = document.getElementById("objTypeTabs");
+    
+    // basicObjects 배열에서 중복 없는 유일한 type 목록 추출 후 정렬
+    const uniqueTypes = [...new Set(basicObjects.map(o => o.type))].sort();
+    
+    // 현재 선택된 필터가 새로 불러온 목록에 없으면 'All'로 초기화
+    if (currentBasicObjFilter !== "All" && !uniqueTypes.includes(currentBasicObjFilter)) {
+        currentBasicObjFilter = "All";
+    }
+
+    // 기본 'All' 버튼
+    let html = `<li><a class="nav-link ${currentBasicObjFilter === 'All' ? 'active' : ''}" onclick="setBasicObjFilter('All', this)">All</a></li>`;
+    
+    // 존재하는 모든 타입에 대해 버튼 생성
+    uniqueTypes.forEach(type => {
+        const isActive = currentBasicObjFilter === type ? 'active' : '';
+        html += `<li><a class="nav-link ${isActive}" onclick="setBasicObjFilter('${type}', this)">${type}</a></li>`;
+    });
+    
+    tabsContainer.innerHTML = html;
 }
 </script>
 

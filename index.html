@@ -1514,9 +1514,21 @@ dropZone.addEventListener('drop', (e) => {
 });
 
 function loadXMLFromString(xmlString) {
+    // 1. XML 표준에 어긋나는 단독 '&' 기호를 '&amp;'로 자동 치환 (정상적인 엔티티 문자인 &#10; 등은 제외)
+    const sanitizedXml = xmlString.replace(/&(?!amp;|lt;|gt;|quot;|apos;|#\d+;|#[xX][a-fA-F0-9]+;)/g, '&amp;');
+    
     const parser = new DOMParser();
-    xmlDoc = parser.parseFromString(xmlString, "text/xml");
-    if(xmlDoc.getElementsByTagName("parsererror").length > 0) { alert("XML 파싱 오류"); return; }
+    xmlDoc = parser.parseFromString(sanitizedXml, "text/xml");
+    
+    // 2. 파싱 에러 상세 출력
+    const parseError = xmlDoc.getElementsByTagName("parsererror");
+    if(parseError.length > 0) { 
+        console.error("XML 파싱 에러 내용:", parseError[0].textContent);
+        alert("XML 파싱 오류: 데이터에 올바르지 않은 문법이 있습니다."); 
+        return; 
+    }
+    
+    // 3. 정상 처리
     parseAllObjects();
     initLayerTabs();
     renderBasicTable();

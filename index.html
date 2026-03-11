@@ -1849,7 +1849,6 @@ function renderStandardTable(rows, table) {
             } else { 
                 let cellVal = colData[id] || "-";
                 
-                // [변경] Comment 제외하고 모든 값에 타입 뱃지 스타일 적용
                 if (id !== 'co') {
                     td.innerHTML = getStyledObjHtml(cellVal);
                 } else {
@@ -1857,31 +1856,28 @@ function renderStandardTable(rows, table) {
                 }
                 if(!colData[id]) td.style.color="#94a3b8"; 
                 
-                // [클릭 이벤트] 객체 선택 드롭다운 생성 (조건에 따른 필터링 적용)
+                // [클릭 이벤트] 객체 선택 드롭다운 생성
                 td.onclick = function(e) {
                     if(this.querySelector("input") || this.querySelector("select")) return;
-                    let currVal = colData[id] || ""; // 원본 값 기준
+                    let currVal = colData[id] || ""; 
                     this.innerHTML = "";
                     let inputEl;
 
                     if (id === 'co') {
-                        // Comment는 텍스트 입력
                         inputEl = document.createElement("input");
                         inputEl.type = "text";
                         inputEl.value = currVal;
                         inputEl.className = "inline-input";
                     } else {
-                        // 나머지 열은 드롭다운 박스
                         inputEl = document.createElement("select");
                         inputEl.className = "inline-select";
                         
                         let defaults = [];
                         if(id==='ac') defaults = ['None','Allow','Deny','Force Deny'];
                         else if(id==='tr') defaults = ['None'];
-                        else if(id==='ep') defaults = ['Appliance', 'Universal', 'WSS', 'None']; // Target 제한
+                        else if(id==='ep') defaults = ['Appliance', 'Universal', 'WSS', 'None'];
                         else defaults = ['Any']; 
                         
-                        // ===== 항목별 허용 객체(Type) 매핑 로직 =====
                         let validTypes = [];
                         if (id === 'so') validTypes = ['ip', 'group', 'hdr-act', 'hdr-obj', 'http-req-body', 'appar-data-type', 'user-agent-list', 'combined'];
                         else if (id === 'de') validTypes = ['ip', 'url list', 'a-url', 'app-url', 'appar-data-type', 'categorylist4', 'file-download', 'host-port', 'op-url', 'combined'];
@@ -1892,14 +1888,12 @@ function renderStandardTable(rows, table) {
                             const curLayer = xmlDoc.getElementsByTagName("layer")[currentLayerIndex];
                             const lType = curLayer.getAttribute("layertype") || "";
                             
-                            validTypes = ['acc-log-fac']; // 공통 허용 (로깅)
+                            validTypes = ['acc-log-fac']; 
                             
                             if (lType.includes("SSLIntercept") || lType.includes("SSLAccess")) {
-                                // [변경] SSL 레이어에서는 제한된 객체만 사용 가능
                                 if (lType.includes("SSLIntercept")) validTypes.push('ssl-fwd-prxy', 'ssl-fwd-prxy522');
                                 if (lType.includes("SSLAccess")) validTypes.push('svr-cert-valdn', 'client-encrypted-tap');
                             } else {
-                                // Web 관련 레이어에서는 차단/인증 관련 객체 사용 가능
                                 validTypes.push('bw-mgmt', 'dny-exc', 'dny-obj', 'htm-ntfy');
                                 if (lType.includes("AdminAuthentication")) validTypes.push('adm-auth-obj');
                                 if (lType.includes("WebContent")) validTypes.push('scan', 'process-request');
@@ -1907,28 +1901,31 @@ function renderStandardTable(rows, table) {
                         }
 
                         let html = '';
-                        // 1. 기본 옵션 세팅
                         defaults.forEach(d => html += `<option value="${d}" ${currVal===d?'selected':''}>${d}</option>`);
                         
-                        // 2. 타겟(ep) 컬럼이 아닐 경우에만 파싱된 객체 매핑
                         if (id !== 'ep') {
                             allObjNames.forEach(obj => {
                                 const objTypeLower = obj.type.toLowerCase();
                                 if (validTypes.includes(objTypeLower)) {
+                                    
+                                    // [신규 로직] 이름에 'Client IP'가 들어간 객체는 Source(so)에서만 보이도록 필터링
+                                    const isClientIP = obj.name.toLowerCase().includes('client ip');
+                                    if (isClientIP && id !== 'so') {
+                                        return; // Source 항목이 아니면 드롭다운 목록에서 제외
+                                    }
+
                                     if (!defaults.includes(obj.name)) {
-                                        // 옵션 목록에서도 [타입]을 표기하여 선택을 도움
                                         html += `<option value="${obj.name}" ${currVal===obj.name?'selected':''}>[${obj.type}] ${obj.name}</option>`;
                                     }
                                 }
                             });
                         }
                         
-                        // 3. 현재 값이 예외적으로 존재하거나 매핑되지 않은 경우 리스트에 임시 추가 표시
                         if(currVal && !defaults.includes(currVal) && !allObjNames.some(o => o.name === currVal && (!validTypes.length || validTypes.includes(o.type.toLowerCase())))) {
                             html = `<option value="${currVal}" selected>${currVal}</option>` + html;
                         }
                         inputEl.innerHTML = html;
-                        inputEl.onclick = (ev) => ev.stopPropagation(); // 클릭 전파 방지
+                        inputEl.onclick = (ev) => ev.stopPropagation(); 
                     }
 
                     const saveVal = () => {
@@ -1950,7 +1947,6 @@ function renderStandardTable(rows, table) {
                             row.appendChild(newC);
                         }
                         
-                        // 렌더링 업데이트 시 뱃지 스타일 재적용
                         if (id !== 'co') this.innerHTML = getStyledObjHtml(newVal || "-");
                         else this.innerText = newVal || "-";
                         

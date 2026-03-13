@@ -1259,24 +1259,24 @@ function runConversion() {
     let ipObjects = [];
     let combObjects = [];
     let aUrlObjects = [];
+    
+    let tlsRowItems = [];
     let httpRowItems = [];
+    let tlsRowCount = 0;
     let httpRowCount = 0;
+    
     let exceptionPagesText = "";
 
-    // 1. Block-message (Exception Page) 추출
+    // 1. Block-message (Exception Page) 내용 그대로 추출
     const blockMsgOuterRegex = /<Block-message>([\s\S]*?)(?:<Block-message\/>|<\/Block-message>)/ig;
     let bmOuterMatch;
     while ((bmOuterMatch = blockMsgOuterRegex.exec(inputData)) !== null) {
-        const block = bmOuterMatch[1];
-        const bmDefineRegex = /define\s+block-message\s+["'“”](.*?)["'“”]([\s\S]*?)end\s+block-message/ig;
-        let bmMatch;
-        while ((bmMatch = bmDefineRegex.exec(block)) !== null) {
-            const name = bmMatch[1].trim();
-            const content = bmMatch[2].trim();
-            exceptionPagesText += `========== [ Exception Page Name: ${name} ] ==========\n${content}\n\n`;
-        }
+        // 내부의 문자열 포맷을 건드리지 않고 그대로 가져옵니다.
+        exceptionPagesText += bmOuterMatch[1].trim() + '\n\n';
     }
-    outputExcBox.value = exceptionPagesText || "추출된 Exception Page (Block-message)가 없습니다.";
+    if (outputExcBox) {
+        outputExcBox.value = exceptionPagesText.trim() || "추출된 Exception Page (Block-message)가 없습니다.";
+    }
 
     // 2. URL 기반 다중/단일 객체 파싱 (<userdefinedurl>)
     const webCatOuterRegex = /<userdefinedurl>([\s\S]*?)(?:<userdefinedurl\/>|<\/userdefinedurl>)/ig;
@@ -1336,7 +1336,72 @@ function runConversion() {
         }
     }
 
-    // 4. HTTP-Policy 파싱
+    // [신규 로직] 컬럼 타입(String vs Condition) 판별 헬퍼 함수
+    function getColType(name, id) {
+        if (id === "co") return "String";
+        if (name === "Any" || name === "None") return "String";
+        return "Condition";
+    }
+
+    // 4-1. TLS-Policy 파싱
+    const tlsOuterRegex = /<TLS-Policy>([\s\S]*?)(?:<TLS-Policy\/>|<\/TLS-Policy>)/ig;
+    let tlsMatch;
+    while ((tlsMatch = tlsOuterRegex.exec(inputData)) !== null) {
+        const block = tlsMatch[1];
+        const policyRegex = /define\s+Policy\s+["'“”](.*?)["'“”]([\s\S]*?)end\s+policy/ig;
+        let pMatch;
+        while ((pMatch = policyRegex.exec(block)) !== null) {
+            const polNameStr = pMatch[1].trim();
+            const pBody = pMatch[2];
+
+            const nameMatch = pBody.match(/name=(.*?)\s+(?:prioirty|priority)=/i);
+            const prioMatch = pBody.match(/(?:prioirty|priority)=(.*?)\s+activated=/i);
+            const actMatch = pBody.match(/activated=(.*?)\s+/i);
+            const descMatch = pBody.match(/desc=(.*?)\s+(?:editDate=|expireDate=|expired=)/i);
+
+            const pName = nameMatch ? nameMatch[1].trim() : polNameStr;
+            const pPriority = prioMatch ? prioMatch[1].trim() : "1";
+            const isEnabled = (actMatch && actMatch[1].trim() === "사용") ? "true" : "false";
+            let pDesc = descMatch ? descMatch[1].trim() : "";
+            if (pDesc === "description") pDesc = ""; 
+            const comment = pDesc ? `${pName} ${pDesc}` : pName;
+
+            const dirMatch = pBody.match(/address\s+direction=(.*)/i);
+            const addrMatch = pBody.match(/(?:address|adress)\s+name=(.*)/i);
+            const typeMatch = pBody.match(/type\s+name=(.*)/i);
+            const catMatch = pBody.match(/userDefinedCategory\s+name=(.*)/i);
+
+            const direction = dirMatch ? dirMatch[1].trim().toLowerCase() : "";
+            const addrName = addrMatch ? addrMatch[1].trim() : "";
+            const typeName = typeMatch ? typeMatch[1].trim() : "";
+            const catName = catMatch ? catMatch[1].trim() : "";
+
+            let soName = "Any"; let deName = "Any";
+
+            if (direction === "inbound" && addrName) { soName = addrName; } 
+            else if (direction === "outbound" && addrName) { deName = addrName; }
+
+            if (typeName) soName = soName === "Any" ? typeName : soName;
+            if (catName) deName = deName === "Any" ? catName : deName;
+
+            let acName = "None";
+            
+            tlsRowItems.push(`
+<rowItem enabled="${isEnabled}" num="${tlsRowCount}">
+<colItem col="0" id="no" value="${pPriority}"/>
+<colItem col="1" id="so" name="${soName}" type="${getColType(soName, 'so')}"/>
+<colItem col="2" id="de" name="${deName}" negate="false" type="${getColType(deName, 'de')}"/>
+<colItem col="3" id="se" name="Any" type="String"/>
+<colItem col="4" id="ac" name="${acName}" negate="false" type="${getColType(acName, 'ac')}"/>
+<colItem col="5" id="tr" name="None" type="String"/>
+<colItem col="6" id="ep" name="Appliance" negate="false" type="${getColType("Appliance", 'ep')}"/>
+<colItem col="7" id="co" name="${comment}" type="String"/>
+</rowItem>`.trim());
+            tlsRowCount++;
+        }
+    }
+
+    // 4-2. HTTP-Policy 파싱
     const httpOuterRegex = /<HTTP-Policy>([\s\S]*?)(?:<HTTP-Policy\/>|<\/HTTP-Policy>)/ig;
     let httpMatch;
     while ((httpMatch = httpOuterRegex.exec(inputData)) !== null) {
@@ -1396,21 +1461,16 @@ function runConversion() {
             if (actionVal === "허용") acName = "Allow";
             else if (actionVal === "차단") acName = blockMsg ? blockMsg : "Deny";
 
-            const soType = soName === "Any" ? "String" : "Condition";
-            const deType = deName === "Any" ? "String" : "Condition";
-            const acType = (acName === "Allow" || acName === "Deny" || acName === "None") ? "String" : "Condition";
-
-            // 시만텍 XML 컬럼 기준에 맞춤 (0:no, 1:so, 2:de, 3:se, 4:ti, 5:ac, 6:tr, 7:ep, 8:co)
             httpRowItems.push(`
 <rowItem enabled="${isEnabled}" num="${httpRowCount}">
 <colItem col="0" id="no" value="${pPriority}"/>
-<colItem col="1" id="so" name="${soName}" type="${soType}"/>
-<colItem col="2" id="de" name="${deName}" negate="false" type="${deType}"/>
+<colItem col="1" id="so" name="${soName}" type="${getColType(soName, 'so')}"/>
+<colItem col="2" id="de" name="${deName}" negate="false" type="${getColType(deName, 'de')}"/>
 <colItem col="3" id="se" name="Any" type="String"/>
 <colItem col="4" id="ti" name="Any" type="String"/>
-<colItem col="5" id="ac" name="${acName}" negate="false" type="${acType}"/>
+<colItem col="5" id="ac" name="${acName}" negate="false" type="${getColType(acName, 'ac')}"/>
 <colItem col="6" id="tr" name="None" type="String"/>
-<colItem col="7" id="ep" name="Appliance" negate="false" type="Condition"/>
+<colItem col="7" id="ep" name="Appliance" negate="false" type="${getColType("Appliance", 'ep')}"/>
 <colItem col="8" id="co" name="${comment}" type="String"/>
 </rowItem>`.trim());
             httpRowCount++;
@@ -1430,6 +1490,9 @@ function runConversion() {
 
     outputXML += `</conditionObjects>\n<layers>\n`;
 
+    if (tlsRowItems.length > 0) {
+        outputXML += `<layer layertype="com.bluecoat.sgos.vpm.SSLAccessPolicyTable">\n<name>TLS Policies</name>\n<numRows>${tlsRowCount}</numRows>\n${tlsRowItems.join('\n')}\n</layer>\n`;
+    }
     if (httpRowItems.length > 0) {
         outputXML += `<layer layertype="com.bluecoat.sgos.vpm.WebAccessPolicyTable">\n<name>Web Access Layer</name>\n<numRows>${httpRowCount}</numRows>\n${httpRowItems.join('\n')}\n</layer>\n`;
     }

@@ -923,7 +923,10 @@ client.address=1.1.1.1 detect_protocol (no) allow
         <div class="panel">
           <div class="panel-header">
             <h3><span class="badge-somansa">Input</span> 소만사 객체/정책 데이터</h3>
-            <button class="btn-convert" onclick="runConversion()">변환 실행 ➔</button>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-copy" onclick="downloadScripts()" style="background:#f1f5f9; border-color:#cbd5e1;">📥 스크립트 다운로드</button>
+              <button class="btn-convert" onclick="runConversion()">변환 실행 ➔</button>
+            </div>
           </div>
           <div class="panel-body">
             <textarea id="somansa-input" class="converter-textarea" placeholder="여기에 소만사 데이터를 입력하세요.

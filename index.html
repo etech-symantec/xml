@@ -2298,5 +2298,32 @@ function renderBasicFilterTabs() {
 }
 </script>
 
+<script>
+    // --- 파이썬 스크립트 다운로드 함수 (0.5초 간격으로 순차 다운로드) ---
+    function downloadScripts() {
+        const script0Content = document.getElementById('script-0').textContent.trim();
+        const script1Content = document.getElementById('script-1').textContent.trim();
+
+        const triggerDownload = (filename, content) => {
+            const blob = new Blob([content], { type: "text/x-python-script" });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        };
+
+        // 첫 번째 스크립트 다운로드
+        triggerDownload("0. Somansa_KOR-ENG_20260320.py", script0Content);
+        
+        // 브라우저의 다중 다운로드 차단을 우회하기 위해 0.5초 지연 후 두 번째 스크립트 다운로드
+        setTimeout(() => {
+            triggerDownload("1. Somansa-Symantec_Converter_20260325.py", script1Content);
+        }, 500);
+    }
+</script>
+
 </body>
 </html>

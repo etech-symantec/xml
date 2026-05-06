@@ -2314,16 +2314,14 @@ function renderBasicFilterTabs() {
         // 실제 GitHub에 업로드된 파이썬 파일의 경로(URL)를 지정합니다.
         // HTML 파일과 같은 위치(폴더)에 업로드되어 있다면 파일명만 적으시면 됩니다.
         const file1_url = "0. Somansa_KOR-ENG_20260320.py"; 
-        const file2_url = "1. Somansa-Symantec_Converter_20260325.py";
-        const file3_url = "1. Somansa-Symantec_Converter_20260420.py";
+        const file2_url = "1. Somansa-Symantec_Converter_20260506.py";
 
         // 첫 번째 파일 다운로드
         triggerDownload(file1_url, "0. Somansa_KOR-ENG_20260320.py");
         
         // 브라우저의 다중 다운로드 차단을 피하기 위해 1초 간격으로 실행
         setTimeout(() => {
-            triggerDownload(file2_url, "1. Somansa-Symantec_Converter_20260325.py");
-            triggerDownload(file3_url, "1. Somansa-Symantec_Converter_20260420.py");
+            triggerDownload(file2_url, "1. Somansa-Symantec_Converter_20260506.py");
         }, 1000);
     }
 </script>

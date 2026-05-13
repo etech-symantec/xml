@@ -2150,15 +2150,27 @@ def convert_somansa_to_symantec(input_data, mode, optimize_choice, internal_netw
             if priv_ips:
                 if len(priv_ips) == 1:
                     formatted_ip = priv_ips[0]
+                    # 출발지 객체 (type=1)
                     ip_obj_name = f"s_IP_{formatted_ip}"
                     ip_objects.append(f'<ipobject name="{escape_xml(ip_obj_name)}" value="{escape_xml(formatted_ip)}" single="true" type="1"/>')
                     symantec_group_map[ip_obj_name] = [formatted_ip]
+                    # 목적지 객체 (type=2) - 내부 IP도 목적지에 포함
+                    d_ip_obj_name = f"d_IP_{formatted_ip}"
+                    ip_objects.append(f'<ipobject name="{escape_xml(d_ip_obj_name)}" value="{escape_xml(formatted_ip)}" single="true" type="2"/>')
+                    symantec_group_map[d_ip_obj_name] = [formatted_ip]
+                    dest_objs.append(d_ip_obj_name)
                 else:
                     base_name = t_name if not pub_ips and not domain_urls else f"{t_name}_PrivIP"
                     ip_obj_name = format_obj_name(base_name, 's_')
                     ip_list_str = ",".join(priv_ips)
                     ip_list_objects.append(f'<ip-list-object name="{escape_xml(ip_obj_name)}" l="{escape_xml(ip_list_str)}" iseffective="false"/>')
                     symantec_group_map[ip_obj_name] = priv_ips
+                    # 목적지 객체용 d_IP_ list - 내부 IP도 목적지에 포함
+                    d_base_name = t_name if not pub_ips and not domain_urls else f"{t_name}_PrivIP"
+                    d_ip_obj_name = format_obj_name(d_base_name, 'd_')
+                    ip_list_objects.append(f'<ip-list-object name="{escape_xml(d_ip_obj_name)}" l="{escape_xml(ip_list_str)}" iseffective="false"/>')
+                    symantec_group_map[d_ip_obj_name] = priv_ips
+                    dest_objs.append(d_ip_obj_name)
                 src_objs.append(ip_obj_name)
                     
             if pub_ips:
